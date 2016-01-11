@@ -1,0 +1,5 @@
+.DS_Store
+workspace.xml
+Thumbs.db
+.idea
+engine\settings.php
