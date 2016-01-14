@@ -19,6 +19,7 @@ function ws_init() {
 	elgg_register_library('elgg:ws:image', "$lib_dir/image.php");
 	elgg_register_library('elgg:ws:gcm_register', "$lib_dir/gcm_register.php");
 	elgg_register_library('elgg:ws:file', "$lib_dir/file.php");
+	elgg_register_library('elgg:ws:site', "$lib_dir/site.php");
 
 	elgg_load_library('elgg:ws:api_user');
 	elgg_load_library('elgg:ws:tokens');
@@ -30,6 +31,7 @@ function ws_init() {
 	elgg_load_library('elgg:ws:image');
 	elgg_load_library('elgg:ws:gcm_register');
 	elgg_load_library('elgg:ws:file');
+	elgg_load_library('elgg:ws:site');
 
 	elgg_register_page_handler('services', 'ws_page_handler');
 
