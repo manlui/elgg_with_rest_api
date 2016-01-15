@@ -342,6 +342,7 @@ function getRiverActivity($activities, $user, $login_user) {
         $entityTxt = "";
         $icon_url="";
         $img_url="";
+        $message_board="";
         $batch_images = array();
         $isObject = false;
 
@@ -369,7 +370,6 @@ function getRiverActivity($activities, $user, $login_user) {
 
                 $entityString = $img->description;
             }
-
         }  else if ($activity->action_type == "create" && $activity->subtype == "album") {
             $isObject = true;
 
@@ -397,7 +397,6 @@ function getRiverActivity($activities, $user, $login_user) {
             $image_url = elgg_format_url($image_url);
 
             $batch_images[] = createAlbumCoverImage($album_cover, $image_join_date, $image_icon_url, $image_url, $user);
-
         } else if ($activity->action_type == "friend" && $activity->subtype == ""){
             $isObject = true;
             $msg = "is now a friend with";
@@ -410,14 +409,12 @@ function getRiverActivity($activities, $user, $login_user) {
                 $img_url = $friendEntity->getIconURL('large');
             }
             $img_url = elgg_format_url($img_url);
-
         } else if ($activity->action_type == "update" && $activity->view == 'river/user/default/profileiconupdate') {
             $isObject = true;
             $entityTxt = "has a new avatar";
             $entityString = "";
             $timeCreated = time_ago($activity->posted);
             $batch_images[] = createProfileImageBatch($activity->object_guid, $timeCreated, $userEntity);
-
         } else if ($activity->subtype == "comment" && $activity->action_type == "comment" && $activity->view == 'river/object/comment/album') {
             $isObject = true;
             $album_comment = get_entity($activity->object_guid);
@@ -428,14 +425,12 @@ function getRiverActivity($activities, $user, $login_user) {
             $entityTxt = 'comment on album ' . $album_entity->title;
             $entityString = $album_comment->description;
             $entityString = strip_tags($entityString);
-
         } else if ($activity->subtype == "file" && $activity->action_type == "create" && $activity->view == 'river/object/file/create') {
             $isObject = true;
             $file_entity = get_entity($activity->object_guid);
             $entityTxt = 'uploaded the file ';
             $entityString = $file_entity->title;
             $entityString = strip_tags($entityString);
-
         } else if ($activity->subtype == "comment" && $activity->action_type == "comment" && $activity->view == 'river/object/comment/create') {
             $isObject = true;
             $file_entity = get_entity($activity->target_guid);
@@ -447,7 +442,6 @@ function getRiverActivity($activities, $user, $login_user) {
             }
             $entityString = $entity->description;
             $entityString = strip_tags($entityString);
-
         } else if ($activity->action_type == "comment" && $activity->subtype == "comment" && $activity->view == 'river/object/comment/image') {
             $isObject = true;
             $image_entity = get_entity($activity->target_guid);
@@ -459,12 +453,25 @@ function getRiverActivity($activities, $user, $login_user) {
             }
             $entityString = $entity->description;
             $entityString = strip_tags($entityString);
-
         } else if ($activity->action_type == "create" && $activity->subtype == "thewire" && $activity->view == 'river/object/thewire/create') {
             $isObject = true;
             $entityTxt = 'posted to the wire';
             $entityString = $entity->description;
             $entityString = strip_tags($entityString);
+        } else if ($activity->action_type == "create" && $activity->view == 'river/group/create') {
+            $isObject = true;
+            $entityTxt = 'created the group ' . $entity->name;
+            $entityString = $entity->description;
+        } else if ($activity->action_type == "join" && $activity->view == 'river/relationship/member/create') {
+            $isObject = true;
+            $entityTxt = 'joined the group ' . $entity->name;
+            $entityString = $entity->description;
+        } else if ($activity->action_type == "messageboard" && $activity->view == 'river/object/messageboard/create') {
+            $isObject = true;
+            $post_on_entity = get_entity($activity->object_guid);
+            $message_board = elgg_get_annotation_from_id($activity->annotation_id);
+            $entityTxt = 'posted on ' . $post_on_entity->name . '\'s message board';
+            $entityString = $message_board->value;
 
         } else {
             //$isObject = true;
