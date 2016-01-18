@@ -10,9 +10,9 @@ function auth_token_check($token, $username, $password)
     }
 
     if (validate_user_token($token, 1) == $user->guid) {
-        $return['token'] = 'OK';
+        $return = 'OK';
     } else {
-        $return['token'] = auth_gettoken($username, $password);
+        $return = auth_gettoken($username, $password);
     }
 
     return $return;
