@@ -45,7 +45,7 @@ elgg_ws_expose_function('likes.add',
 				"Add a like",
 				'POST',
 				true,
-				false);
+				true);
 				
 /**
  * Web service to unlike an entity
@@ -77,7 +77,7 @@ elgg_ws_expose_function('likes.delete',
 				"Delete a like",
 				'POST',
 				true,
-				false);
+				true);
 				
 /**
  * Web service to count number of likes
@@ -130,6 +130,6 @@ elgg_ws_expose_function('likes.getusers',
 					),
 				"Get users who liked an entity",
 				'GET',
-				false,
-				false);
+				true,
+				true);
 				
