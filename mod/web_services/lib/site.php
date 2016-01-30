@@ -50,27 +50,3 @@ function get_logo($site_guid=1) {
     }
     return $return;
 }
-
-function get_api_key() {
-    $list = elgg_get_entities(array(
-        'type' => 'object',
-        'subtype' => 'api_key',
-    ));
-
-    $api_key='';
-    if ($list) {
-        if(sizeof($list) === 1) {
-            $entity = get_entity($list[0]->guid);
-            $api_key = $entity->public;
-        } else {
-            foreach($list as $item){
-                $entity = get_entity($item->get('guid'));
-                if ($entity->title == 'android') {
-                    $api_key = $entity->public;
-                }
-            }
-        }
-
-    }
-    return $api_key;
-}

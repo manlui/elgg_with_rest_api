@@ -159,10 +159,15 @@ function auth_gettoken($username, $password) {
 
 	// validate username and password
 	if (true === elgg_authenticate($username, $password)) {
-		$token = create_user_token($username);
-		if ($token) {
-			return $token;
+		$return['auth_token'] = create_user_token($username);
+		$return['api_key'] = get_api_key();
+		if ($return) {
+			return $return;
 		}
+//		$token = create_user_token($username);
+//		if ($token) {
+//			return $token;
+//		}
 	}
 
 	throw new SecurityException(elgg_echo('SecurityException:authenticationfailed'));

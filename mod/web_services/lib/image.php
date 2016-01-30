@@ -255,7 +255,7 @@ function wire_post_image_comment($guid, $text, $username)
 {
 
     if (!$username) {
-        $user = get_loggedin_user();
+        $user = elgg_get_logged_in_user_entity();
     } else {
         $user = get_user_by_username($username);
         if (!$user) {
@@ -303,6 +303,154 @@ elgg_ws_expose_function('wire.post_image_comment',
     ),
     "Post a comment on a image post",
     'POST',
+    true,
+    true);
+
+
+function image_get_photos($context,  $limit = 20, $offset = 0, $username) {
+
+    if(!$username) {
+        //$user = elgg_get_logged_in_user_entity();
+        throw new InvalidParameterException('registration:usernamenotvalid');
+    } else {
+        $user = get_user_by_username($username);
+        if (!$user) {
+            throw new InvalidParameterException('registration:usernamenotvalid');
+        }
+    }
+
+    $loginUser = elgg_get_logged_in_user_entity();
+
+    if($context == "all"){
+        $params = array(
+            'type' => 'object',
+            'subtype' => 'image',
+            'owner_guid' => NULL,
+            'limit' => $limit,
+            'offset' => $offset,
+            'full_view' => false,
+            'list_type' => 'gallery',
+            'gallery_class' => 'tidypics-gallery'
+        );
+    } else if ($context == 'mine') {
+        $params = array(
+            'type' => 'object',
+            'subtype' => 'image',
+            'owner_guid' => $user->guid,
+            'limit' => $limit,
+            'offset' => $offset,
+            'full_view' => false,
+            'list_type' => 'gallery',
+            'gallery_class' => 'tidypics-gallery'
+        );
+    } else if ($context == 'friends') {
+        if ($friends = $user->getFriends(array('limit' => false))) {
+            $friendguids = array();
+            foreach ($friends as $friend) {
+                $friendguids[] = $friend->getGUID();
+            }
+
+            $params = array(
+                'type' => 'object',
+                'subtype' => 'image',
+                'owner_guids' => $friendguids,
+                'limit' => $limit,
+                'offset' => $offset,
+                'full_view' => false,
+                'list_type' => 'gallery',
+                'gallery_class' => 'tidypics-gallery'
+            );
+        }
+    } else {
+        $params = array(
+            'type' => 'object',
+            'subtype' => 'image',
+            'owner_guid' => NULL,
+            'limit' => $limit,
+            'offset' => $offset,
+            'full_view' => false,
+            'list_type' => 'gallery',
+            'gallery_class' => 'tidypics-gallery'
+        );
+    }
+
+    $photos = elgg_get_entities($params);
+
+
+    $site_url = get_config('wwwroot');
+    if($photos) {
+        $return = array();
+        foreach($photos as $single ) {
+            $photo['guid'] = $single->guid;
+            $file_name = $single->getFilenameOnFilestore();
+
+            $image_owner_guid_entity = $single->getOwnerEntity();
+            $image_owner_guid = $image_owner_guid_entity->guid;
+            $image_owner_join_date = $image_owner_guid_entity->time_created;
+
+            $position = strrpos($file_name, '/');
+            $position = $position + 1;
+            $icon_file_name = substr_replace($file_name, 'largethumb', $position, 0);
+
+            $image_icon_url = $site_url . 'services/api/rest/json/?method=image.get_post';
+            $icon_url = $image_icon_url . '&joindate=' . $image_owner_join_date . '&guid=' . $image_owner_guid
+                . '&name=' . $icon_file_name;
+            $icon_url = elgg_format_url($icon_url);
+
+            $image_url = $site_url . 'services/api/rest/json/?method=image.get_post';
+            $img_url = $image_url . '&joindate=' . $image_owner_join_date . '&guid=' . $image_owner_guid
+                . '&name=' . $file_name;
+            $img_url = elgg_format_url($img_url);
+
+            $photo['container_guid'] = $single->container_guid;
+            if ($single->title != null) {
+                $photo['title'] = $single->title;
+            } else {
+                $photo['title'] = '';
+            }
+
+            $photo['time_create'] = time_ago($single->time_created);
+            if ($single->description != null) {
+                $photo['description'] = $single->description;
+            } else {
+                $photo['description'] = '';
+            }
+
+
+
+            $owner = get_entity($single->owner_guid);
+            $photo['owner']['guid'] = $owner->guid;
+            $photo['owner']['name'] = $owner->name;
+            $photo['owner']['username'] = $owner->username;
+            $photo['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+
+            $photo['icon_url'] =$icon_url;
+            $photo['img_url'] = $img_url;
+            $photo['like_count'] = likes_count_number_of_likes($single->guid);
+            $photo['comment_count'] = api_get_image_comment_count($single->guid);
+            $photo['like'] = checkLike($single->guid, $loginUser->guid);
+
+            $return[] = $photo;
+        }
+    }
+    else {
+        $msg = elgg_echo('blog:none');
+        throw new InvalidParameterException($msg);
+    }
+
+
+    return $return;
+}
+
+elgg_ws_expose_function('image.get_photos',
+    "image_get_photos",
+    array(	'context' => array ('type' => 'string'),
+            'limit' => array ('type' => 'int', 'required' => false, 'default' => 20),
+            'offset' => array ('type' => 'int', 'required' => false, 'default' => 0),
+            'username' => array ('type' => 'string', 'required' => false),
+    ),
+    "GET all the photos",
+    'GET',
     true,
     true);
 
