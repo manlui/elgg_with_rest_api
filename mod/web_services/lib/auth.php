@@ -10,7 +10,8 @@ function auth_token_check($token, $username, $password)
     }
 
     if (validate_user_token($token, 1) == $user->guid) {
-        $return['token'] = 'OK';
+        $return['auth_token'] = 'OK';
+        $return['api_key'] = get_api_key();
 
     } else {
         $return = auth_gettoken($username, $password);
