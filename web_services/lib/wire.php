@@ -76,7 +76,8 @@ function wire_get_posts($context, $limit = 10, $offset = 0, $username) {
     if (!$user) {
         throw new InvalidParameterException('registration:usernamenotvalid');
     }
-		
+
+    $params = array();
 	if($context == "all"){
 		$params = array(
 			'types' => 'object',
@@ -98,9 +99,23 @@ function wire_get_posts($context, $limit = 10, $offset = 0, $username) {
 	$latest_wire = elgg_get_entities($params);
 		
 	if($context == "friends"){
-		$latest_wire = get_user_friends_objects($user->guid, 'thewire', $limit, $offset);
+        $timelower = 0;
+        $timeupper = 0;
+//		$latest_wire = get_user_friends_objects($user->guid, 'thewire', $limit, $offset);
+        $latest_wire = elgg_get_entities_from_relationship(array(
+            'type' => 'object',
+            'subtype' => 'thewire',
+            'limit' => $limit,
+            'offset' => $offset,
+            'created_time_lower' => $timelower,
+            'created_time_upper' => $timeupper,
+            'relationship' => 'friend',
+            'relationship_guid' => $user->guid,
+            'relationship_join_on' => 'container_guid',
+        ));
 	}
 
+    $return = array();
     if($latest_wire){
         foreach($latest_wire as $single ) {
             $wire['guid'] = $single->guid;
@@ -108,9 +123,10 @@ function wire_get_posts($context, $limit = 10, $offset = 0, $username) {
             $owner = get_entity($single->owner_guid);
             $wire['owner']['guid'] = $owner->guid;
             $wire['owner']['name'] = $owner->name;
+            $wire['owner']['username'] = $owner->username;
             $wire['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
 
-            $wire['time_created'] = (int)$single->time_created;
+            $wire['time_created'] = time_ago($single->time_created);
             $wire['description'] = $single->description;
             $return[] = $wire;
         }
@@ -133,231 +149,6 @@ elgg_ws_expose_function('wire.get_posts',
 				'GET',
 				true,
 				true);
-
-
-
-//function wire_get_user_river($context, $limit = 10, $offset = 0, $username) {
-//    $user = get_user_by_username($username);
-//    if (!$user) {
-//        throw new InvalidParameterException('registration:usernamenotvalid');
-//    }
-//
-//    if ($user) {
-//        $postSize = 0;
-//        do {
-//            $params = array(
-//                'types' => 'object',
-//                'subject_guid' => $user->guid,
-//                'limit' => $limit,
-//                'offset' => $offset,
-//                'full_view' => FALSE,
-//            );
-//
-//
-//            $latest_post = elgg_get_river($params);
-//
-//            if ($latest_post) {
-//                foreach ($latest_post as $single) {
-//
-//                    $sub_type = $single->subtype;
-//
-//                    $url = $user->getIconURL();
-//                    $url = elgg_format_url($url);
-//                    $avatar_url = $url;
-//
-//                    $icon_url = "";
-//                    $img_url = "";
-//                    $batch_images = array();
-//
-//                    $entity_guid = $single->object_guid;
-//                    $entity = get_entity($entity_guid);
-//                    $like = '';
-//                    if (likes_count($entity) > 0) {
-//                        $list = elgg_get_annotations(array('guid' => $entity_guid, 'annotation_name' => 'likes', 'limit' => 99));
-//                        foreach ($list as $singlelike) {
-//                            if ($singlelike->owner_guid == $user->guid) {
-//                                $like = 'like';
-//                            }
-//                        }
-//                    }
-//
-//                    $options = array(
-//                        "metadata_name" => "wire_thread",
-//                        "metadata_value" => $entity_guid,
-//                        "type" => "object",
-//                        "subtype" => "thewire",
-//                        "limit" => 99,
-//                    );
-//
-//                    $comments = get_elgg_comments($options, 'elgg_get_entities_from_metadata');
-//                    $comment_count = sizeof($comments);
-//                    if ($comment_count >= 1) {
-//                        $comment_count = $comment_count - 1;
-//                    }
-//
-//                    $entityString = "";
-//                    $entityTxt = "";
-//                    $like_count_guid = "";
-//                    $like_count_guid = $single->object_guid;
-//                    $isObject = false;
-//
-//                    if ($sub_type == "tidypics_batch") {
-//                        $singleImageId = (int)$single->object_guid;
-//                        $singleImageId = $singleImageId - 1;
-//                        $singleImageEntity = get_entity($singleImageId);
-//                        if ($singleImageEntity) {
-//                            $isObject = true;
-//
-//                            $batch_images = getBatchImagesList($single->object_guid);
-//
-//                            $file_name = $singleImageEntity->getFilenameOnFilestore();
-//                            $file_name = str_replace(' ', '%20', $file_name);
-//                            $original_file_name = $singleImageEntity->originalfilename;
-//                            $site_url = get_config('wwwroot');
-//                            $image_owner_guid_entity = $singleImageEntity->getOwnerEntity();
-//                            $image_owner_guid = $image_owner_guid_entity->guid;
-//                            $image_owner_join_date = $image_owner_guid_entity->get('time_created');
-//
-//                            $position = strrpos($file_name, '/');
-//                            $position = $position + 1;
-//                            $icon_file_name = substr_replace($file_name, 'largethumb', $position, 0);
-//
-//                            $image_icon_url = $site_url . 'mod/tidypics/imagedirect.php?lastcache=1430169821';
-//                            $image_icon_url = $image_icon_url . '&joindate=' . $image_owner_join_date . '&guid=' . $image_owner_guid
-//                                . '&name=' . $icon_file_name;
-//                            $icon_url = elgg_format_url($image_icon_url);
-//
-//                            $image_url = $site_url . 'mod/tidypics/imagedirect.php?lastcache=1430169821';
-//                            $image_url = $image_url . '&joindate=' . $image_owner_join_date . '&guid=' . $image_owner_guid
-//                                . '&name=' . $file_name;
-//                            $img_url = elgg_format_url($image_url);
-//
-//                            if (sizeof($batch_images) > 1) {
-//                                $entityString = $singleImageEntity->description;
-//                                $entityTxt = "Added the photos to the album.";
-//                            } else {
-//                                $entityString = $singleImageEntity->description;
-//                                $entityTxt = "Added the photo " . $original_file_name . " to the album.";
-//                            }
-//
-//                            $like_count_guid = $batch_images[0]['guid'];
-//                            if (likes_count_number_of_likes($like_count_guid) > 0) {
-//                                $list = elgg_get_annotations(array('guid' => $like_count_guid, 'annotation_name' => 'likes', 'limit' => 99));
-//                                foreach ($list as $singlelike) {
-//                                    if ($singlelike->owner_guid == $user->guid) {
-//                                        $like = 'like';
-//                                    }
-//                                }
-//                            }
-//
-//                            $comment_count = api_get_image_comment_count($like_count_guid);
-//                        }
-//
-//                    } else if ($single->action_type == "friend" && $single->subtype == "") {
-//                        $isObject = true;
-//                        $msg = "is now a friend with";
-//                        $friendEntity = get_entity($single->object_guid);
-//                        $entityTxt = $msg . " " . $friendEntity->get("name");
-//                    } else if ($single->action_type == "create" && $single->subtype == "album") {
-//                        $isObject = true;
-//                        $album = get_entity($single->object_guid);
-//                        $entityTxt = "created a new photo album " . $album->get('title');
-//                        $album_cover = $album->getCoverImage();
-//
-//                        $file_name = $album_cover->getFilenameOnFilestore();
-//
-//                        $site_url = get_config('wwwroot');
-//                        $image_owner_guid_entity = $album_cover->getOwnerEntity();
-//                        $image_owner_guid = $image_owner_guid_entity->guid;
-//                        $image_owner_join_date = $image_owner_guid_entity->get('time_created');
-//
-//                        $position = strrpos($file_name, '/');
-//                        $position = $position + 1;
-//                        $icon_file_name = substr_replace($file_name, 'largethumb', $position, 0);
-//
-//                        $image_icon_url = $site_url . 'mod/tidypics/imagedirect.php?lastcache=1430169821';
-//                        $image_icon_url = $image_icon_url . '&joindate=' . $image_owner_join_date . '&guid=' . $image_owner_guid
-//                            . '&name=' . $icon_file_name;
-//                        $icon_url = elgg_format_url($image_icon_url);
-//
-//                        $image_url = $site_url . 'mod/tidypics/imagedirect.php?lastcache=1430169821';
-//                        $image_url = $image_url . '&joindate=' . $image_owner_join_date . '&guid=' . $image_owner_guid
-//                            . '&name=' . $file_name;
-//                        $img_url = elgg_format_url($image_url);
-//
-//                        $image['guid'] = $album_cover->get("guid");
-//                        $image['title'] = $album_cover->get("title");
-//                        $image['time_create'] = $image_owner_join_date;
-//                        $image['owner_guid'] = $album_cover->get("owner_guid");
-//                        $image['icon_url'] = $icon_url;
-//                        $image['img_url'] = $img_url;
-//
-//                        $batch_images = $image;
-//
-//                    } else if ($single->action_type == "update") {
-//                        $isObject = true;
-//                        $entityTxt = "has a new avatar";
-//                    } else if ($single->subtype == "image" && $single->action_type == "comment") {
-//                        $isObject = true;
-//                        $image_entity = get_entity($single->object_guid);
-//                        $original_file_name = $image_entity->originalfilename;
-//                        $image_comment = elgg_get_annotation_from_id($single->annotation_id);
-//                        $entityTxt = 'Comment on image ' . $original_file_name . " " . $image_comment->value;
-//                    } else if ($single->subtype == "album" && $single->action_type == "comment") {
-//                        $isObject = true;
-//                        $album_entity = get_entity($single->object_guid);
-//                        $album_comment = elgg_get_annotation_from_id($single->annotation_id);
-//                        $entityTxt = 'Comment on album ' . $album_entity->title . " " . $album_comment->value;
-//                    } else {
-//                        $isObject = true;
-//                        $entityTxt = get_object_entity_as_row($single->object_guid)->description;
-//                    }
-//
-//                    if ($isObject) {
-//                        $postSize = $postSize + 1;
-//                        $handle[] = array(
-//                            'time' => time_ago($single->time_created),
-//                            'type' => $single->type,
-//                            'sub_type' => $single->subtype,
-//                            'action_type' => $single->getType(),
-//                            'object_guid' => $single->guid,
-//                            'subject_guid' => $single->owner_guid,
-//                            'view' => $single->view,
-//                            'string' => $entityString,
-//                            'txt' => $entityTxt,
-//                            'name' => $user->name,
-//                            'username' => $user->get('username'),
-//                            'avatar_url' => $avatar_url,
-//                            'icon_url' => $icon_url,
-//                            'img_url' => $img_url,
-//                            'like_count' => likes_count_number_of_likes($like_count_guid),
-//                            'like' => $like,
-//                            'comment_count' => $comment_count,
-//                            'access_id' => $single->access_id,
-//                            'batch_images' => $batch_images
-//                        );
-//                    }
-//                }
-//            }
-//        } while ($postSize < $limit && $latest_post != null);
-//
-//    }
-//    $jsonexport['activity'] = $handle;
-//    return $jsonexport['activity'];
-//}
-//
-//elgg_ws_expose_function('wire.get_user_river',
-//    "wire_get_user_river",
-//    array(	'context' => array ('type' => 'string', 'required' => true, 'default' => 'mine'),
-//        'limit' => array ('type' => 'int', 'required' => true),
-//        'offset' => array ('type' => 'int', 'required' => true),
-//        'username' => array ('type' => 'string', 'required' =>true),
-//    ),
-//    "Read lates user river",
-//    'GET',
-//    true,
-//    true);
-
 
 /**
  * Web service for delete a wire post
@@ -425,11 +216,13 @@ function wire_get_comments($guid, $limit = 99, $offset = 0){
         "metadata_value" => $guid,
         "type" => "object",
         "subtype" => "thewire",
-        "limit" => 99,
+        "limit" => $limit,
+        "offset" => $offset,
     );
 
     $comments = get_elgg_comments($options, 'elgg_get_entities_from_metadata');
 
+    $return = array();
     if($comments){
         foreach($comments as $single){
             $comment['guid'] = $single->guid;
@@ -474,7 +267,7 @@ elgg_ws_expose_function('wire.get_comments',
 function wire_post_comment($parent_guid, $text, $access = ACCESS_PUBLIC, $wireMethod = "api", $username){
 
     if(!$username) {
-        $user = get_loggedin_user();
+        $user = elgg_get_logged_in_user_entity();
     } else {
         $user = get_user_by_username($username);
         if (!$user) {
@@ -488,7 +281,6 @@ function wire_post_comment($parent_guid, $text, $access = ACCESS_PUBLIC, $wireMe
         return $return;
     }
 
-    $access_id = -2;
     if ($access == 'ACCESS_FRIENDS') {
         $access_id = -2;
     } elseif ($access == 'ACCESS_PRIVATE') {
