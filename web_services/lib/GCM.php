@@ -52,7 +52,7 @@ class GCM {
 
         if ($message) {
             // include config
-            $GOOGLE_API_KEY = "Google API Key here";
+            $GOOGLE_API_KEY = "AIzaSyCFqKnBxYl11g-Emp-Q4BCqymMTh1uxK3k";
 
             // Set POST variables
             $url = 'https://android.googleapis.com/gcm/send';
@@ -98,7 +98,7 @@ class GCM {
 
     function removeOldRegId($regId)
     {
-        $db = new DB_Functions();
+        $db = new DB_Register_Functions();
         $result = $db->deleteRegId($regId);
         if ($result) {
             echo "Success removed RegId";
@@ -109,7 +109,7 @@ class GCM {
 
     public function updateRegId($old_regId, $new_regId)
     {
-        $db = new DB_Functions();
+        $db = new DB_Register_Functions();
         $result = $db->updateNewRegId($old_regId, $new_regId);
         if ($result) {
             echo "Success updated RegId";

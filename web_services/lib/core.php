@@ -45,23 +45,34 @@ function site_river_short($username, $limit=20, $offset=0) {
 elgg_ws_expose_function('post.get_comments',
     "post_get_comments",
     array(	'guid' => array ('type' => 'string'),
-        'limit' => array ('type' => 'int', 'required' => false, 'default' => 10),
+        'username' => array ('type' => 'string', 'required' => false),
+        'limit' => array ('type' => 'int', 'required' => false, 'default' => 20),
         'offset' => array ('type' => 'int', 'required' => false, 'default' => 0),
 
     ),
     "Get comments for a post",
     'GET',
     true,
-    false);
+    true);
 
 /**
  * @param $guid
+ * @param $username
  * @param int $limit
  * @param int $offset
  * @return array
  * @throws InvalidParameterException
  */
-function post_get_comments($guid, $limit = 99, $offset = 0){
+function post_get_comments($guid, $username, $limit = 20, $offset = 0){
+
+    if(!$username) {
+        $user = elgg_get_logged_in_user_entity();
+    } else {
+        $user = get_user_by_username($username);
+        if (!$user) {
+            throw new InvalidParameterException('registration:usernamenotvalid');
+        }
+    }
 
     $comments = elgg_get_entities(array(
         'type' => 'object',
@@ -84,6 +95,8 @@ function post_get_comments($guid, $limit = 99, $offset = 0){
             $comment['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
 
             $comment['time_created'] = time_ago($single->time_created);
+            $comment['like_count'] = likes_count_number_of_likes($single->guid);
+            $comment['like'] = checkLike($single->guid, $user->guid);
             $return[] = $comment;
         }
     } else {
@@ -427,10 +440,29 @@ function getRiverActivity($activities, $user, $login_user) {
             $entityString = strip_tags($entityString);
         } else if ($activity->subtype == "file" && $activity->action_type == "create" && $activity->view == 'river/object/file/create') {
             $isObject = true;
-            $file_entity = get_entity($activity->object_guid);
-            $entityTxt = 'uploaded the file ';
-            $entityString = $file_entity->title;
-            $entityString = strip_tags($entityString);
+            $entityTxt = 'uploaded the file ' . $entity->title;
+
+            if ($entity->description != null) {
+                $entityString = $entity->description;
+                $entityString = strip_tags($entityString);
+            } else {
+                $entityString = $entity->title;
+            }
+
+            $simpletype = $entity->simpletype;
+            if ($simpletype == "image") {
+                $activity->type = 'image';
+                $icon_url = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $entity->guid . '&size=largethumb';
+                $icon_url = elgg_format_url($icon_url);
+
+                $img_url = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $entity->guid . '&size=original';
+                $img_url = elgg_format_url($img_url);
+            } else {
+                $activity->type = 'download';
+                $icon_url = elgg_format_url($entity->getIconURL('large'));
+                $img_url = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $entity->guid . '&size=' . $entity->originalfilename;
+                $img_url = elgg_format_url($img_url);
+            }
         } else if ($activity->subtype == "comment" && $activity->action_type == "comment" && $activity->view == 'river/object/comment/create') {
             $isObject = true;
             $file_entity = get_entity($activity->target_guid);
@@ -461,18 +493,28 @@ function getRiverActivity($activities, $user, $login_user) {
         } else if ($activity->action_type == "create" && $activity->view == 'river/group/create') {
             $isObject = true;
             $entityTxt = 'created the group ' . $entity->name;
-            $entityString = $entity->description;
+            $entityString = strip_tags($entity->description);
         } else if ($activity->action_type == "join" && $activity->view == 'river/relationship/member/create') {
             $isObject = true;
             $entityTxt = 'joined the group ' . $entity->name;
-            $entityString = $entity->description;
+            $entityString = strip_tags($entity->description);
         } else if ($activity->action_type == "messageboard" && $activity->view == 'river/object/messageboard/create') {
             $isObject = true;
             $post_on_entity = get_entity($activity->object_guid);
             $message_board = elgg_get_annotation_from_id($activity->annotation_id);
             $entityTxt = 'posted on ' . $post_on_entity->name . '\'s message board';
-            $entityString = $message_board->value;
+            $entityString = strip_tags($message_board->value);
 
+        } else if ($activity->action_type == "create" && $activity->view == 'river/object/blog/create' && $activity->subtype == 'blog') {
+            $isObject = true;
+            $entityTxt = 'published a blog post ' . $entity->title;
+            if (strlen($entity->description) > 300) {
+                $entityString = substr(strip_tags($entity->description), 0, 300);
+                $entityString = preg_replace('/\W\w+\s*(\W*)$/', '$1', $entityString) . '...';
+
+            } else {
+                $entityString = strip_tags($entity->description);
+            }
         } else {
             //$isObject = true;
             //$entityTxt = get_object_entity_as_row($activity->object_guid)->description;

@@ -312,7 +312,6 @@ function blog_get_post($guid, $username) {
         'type' => 'object',
         'subtype' => 'comment',
         'container_guid' => $guid,
-        "limit" => 99,
     ));
 
     $return['owner'] = getBlogOwner($blog->owner_guid);
@@ -344,23 +343,29 @@ elgg_ws_expose_function('blog.get_post',
  * Web service to retrieve comments on a blog post
  *
  * @param string $guid blog guid
+ * @param $username
  * @param int|string $limit Number of users to return
  * @param int|string $offset Indexing offset, if any
  * @return array
  * @throws InvalidParameterException
  */
-function blog_get_comments($guid, $limit = 10, $offset = 0){
+function blog_get_comments($guid, $username, $limit = 20, $offset = 0){
 
-    $user = elgg_get_logged_in_user_entity();
-    if (!$user) {
-        throw new InvalidParameterException('registration:usernamenotvalid');
+    if(!$username) {
+        $user = elgg_get_logged_in_user_entity();
+    } else {
+        $user = get_user_by_username($username);
+        if (!$user) {
+            throw new InvalidParameterException('registration:usernamenotvalid');
+        }
     }
 
     $comments = elgg_get_entities(array(
         'type' => 'object',
         'subtype' => 'comment',
         'container_guid' => $guid,
-        "limit" => 99,
+        'limit' => $limit,
+        'offset' => $offset,
     ));
 
 
@@ -390,7 +395,8 @@ function blog_get_comments($guid, $limit = 10, $offset = 0){
 elgg_ws_expose_function('blog.get_comments',
     "blog_get_comments",
     array(	'guid' => array ('type' => 'string'),
-        'limit' => array ('type' => 'int', 'required' => false, 'default' => 10),
+        'username' => array ('type' => 'string', 'required' => false),
+        'limit' => array ('type' => 'int', 'required' => false, 'default' => 20),
         'offset' => array ('type' => 'int', 'required' => false, 'default' => 0),
 
     ),

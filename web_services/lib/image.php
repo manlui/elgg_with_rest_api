@@ -191,17 +191,28 @@ elgg_ws_expose_function('image.save_post',
 
 /**
  * @param $guid
+ * @param $username
  * @param int $limit
  * @param int $offset
  * @return array
  * @throws InvalidParameterException
  */
-function wire_get_image_comments($guid, $limit = 99, $offset = 0){
+function wire_get_image_comments($guid, $username, $limit = 20, $offset = 0){
+
+    if(!$username) {
+        $user = elgg_get_logged_in_user_entity();
+    } else {
+        $user = get_user_by_username($username);
+        if (!$user) {
+            throw new InvalidParameterException('registration:usernamenotvalid');
+        }
+    }
 
     $comments = elgg_get_entities(array(
         'type' => 'object',
         'subtype' => 'comment',
         'container_guid' => $guid,
+        'offset' => $offset,
         'limit' => $limit,
     ));
 
@@ -220,6 +231,9 @@ function wire_get_image_comments($guid, $limit = 99, $offset = 0){
             $response['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
 
             $response['time_created'] = time_ago($comment->time_created);
+            $comment['like_count'] = likes_count_number_of_likes($comment->guid);
+            $comment['like'] = checkLike($comment->guid, $user->guid);
+
             $return[] = $response;
         }
 
@@ -234,6 +248,7 @@ function wire_get_image_comments($guid, $limit = 99, $offset = 0){
 elgg_ws_expose_function('wire.get_image_comments',
     "wire_get_image_comments",
     array(	'guid' => array ('type' => 'string'),
+        'username' => array ('type' => 'string', 'required' => false),
         'limit' => array ('type' => 'int', 'required' => false, 'default' => 10),
         'offset' => array ('type' => 'int', 'required' => false, 'default' => 0),
 
@@ -390,7 +405,7 @@ function image_get_photos($context,  $limit = 20, $offset = 0, $username) {
 
             $position = strrpos($file_name, '/');
             $position = $position + 1;
-            $icon_file_name = substr_replace($file_name, 'largethumb', $position, 0);
+            $icon_file_name = substr_replace($file_name, 'smallthumb', $position, 0);
 
             $image_icon_url = $site_url . 'services/api/rest/json/?method=image.get_post';
             $icon_url = $image_icon_url . '&joindate=' . $image_owner_join_date . '&guid=' . $image_owner_guid

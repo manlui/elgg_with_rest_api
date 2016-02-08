@@ -71,10 +71,14 @@ elgg_ws_expose_function('wire.save_post',
  * @return bool
  * @throws InvalidParameterException
  */
-function wire_get_posts($context, $limit = 10, $offset = 0, $username) {
-    $user = get_user_by_username($username);
-    if (!$user) {
-        throw new InvalidParameterException('registration:usernamenotvalid');
+function wire_get_posts($context, $limit = 20, $offset = 0, $username) {
+    if(!$username) {
+        $user = elgg_get_logged_in_user_entity();
+    } else {
+        $user = get_user_by_username($username);
+        if (!$user) {
+            throw new InvalidParameterException('registration:usernamenotvalid');
+        }
     }
 
     $params = array();
@@ -128,6 +132,24 @@ function wire_get_posts($context, $limit = 10, $offset = 0, $username) {
 
             $wire['time_created'] = time_ago($single->time_created);
             $wire['description'] = $single->description;
+            $wire['like_count'] = likes_count_number_of_likes($single->guid);
+            $wire['like'] = checkLike($single->guid, $user->guid);
+
+            $options = array(
+                "metadata_name" => "wire_thread",
+                "metadata_value" => $single->guid,
+                "type" => "object",
+                "subtype" => "thewire",
+            );
+
+            $comments = get_elgg_comments($options, 'elgg_get_entities_from_metadata');
+            if (sizeof($comments) > 0) {
+                $comment_count = sizeof($comments) - 1;
+            } else {
+                $comment_count = 0;
+            }
+            $wire['comment_count'] = $comment_count;
+
             $return[] = $wire;
         }
     } else {
@@ -145,7 +167,7 @@ elgg_ws_expose_function('wire.get_posts',
 						'offset' => array ('type' => 'int', 'required' => false),
 						'username' => array ('type' => 'string', 'required' =>false),
 					),
-				"Read lates wire post",
+				"Read latest wire post",
 				'GET',
 				true,
 				true);
@@ -204,12 +226,21 @@ elgg_ws_expose_function('wire.delete_posts',
 
 /**
  * @param $guid
+ * @param $username
  * @param int $limit
  * @param int $offset
  * @return array
  * @throws InvalidParameterException
  */
-function wire_get_comments($guid, $limit = 99, $offset = 0){
+function wire_get_comments($guid, $username, $limit = 20, $offset = 0){
+    if(!$username) {
+        $user = elgg_get_logged_in_user_entity();
+    } else {
+        $user = get_user_by_username($username);
+        if (!$user) {
+            throw new InvalidParameterException('registration:usernamenotvalid');
+        }
+    }
 
     $options = array(
         "metadata_name" => "wire_thread",
@@ -235,6 +266,8 @@ function wire_get_comments($guid, $limit = 99, $offset = 0){
             $comment['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
 
             $comment['time_created'] = time_ago($single->time_created);
+            $comment['like_count'] = likes_count_number_of_likes($single->guid);
+            $comment['like'] = checkLike($single->guid, $user->guid);
             $return[] = $comment;
         }
     } else {
@@ -246,14 +279,15 @@ function wire_get_comments($guid, $limit = 99, $offset = 0){
 elgg_ws_expose_function('wire.get_comments',
     "wire_get_comments",
     array(	'guid' => array ('type' => 'string'),
-        'limit' => array ('type' => 'int', 'required' => false, 'default' => 10),
+        'username' => array ('type' => 'string', 'required' => false),
+        'limit' => array ('type' => 'int', 'required' => false, 'default' => 20),
         'offset' => array ('type' => 'int', 'required' => false, 'default' => 0),
 
     ),
     "Get comments for a wire post",
     'GET',
     true,
-    false);
+    true);
 
 /**
  * @param $parent_guid
