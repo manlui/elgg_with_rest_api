@@ -8,8 +8,6 @@ $key_view = elgg_view('input/text', array(
 	'class' => 'text_input',
 ));
 
-$post_headder_string = elgg_echo('facebook_connect:post_headder');
-
 $settings = <<<__HTML
 <div>$insert_view</div>
 <div>$key_string $key_view</div>
