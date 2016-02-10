@@ -52,7 +52,7 @@ class GCM {
 
         if ($message) {
             // include config
-            $GOOGLE_API_KEY = "AIzaSyCFqKnBxYl11g-Emp-Q4BCqymMTh1uxK3k";
+            $GOOGLE_API_KEY = elgg_get_plugin_setting('google_api_key', 'web_services');
 
             // Set POST variables
             $url = 'https://android.googleapis.com/gcm/send';
