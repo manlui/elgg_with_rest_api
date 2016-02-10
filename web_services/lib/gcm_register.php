@@ -29,7 +29,7 @@ function gcm_register($regId, $account, $name) {
 
     // create the tables for API stats
     $path = elgg_get_plugins_path();
-    run_sql_script($path . "web_services/lib/schema/mysql.sql");
+    run_sql_script($path . "web_services/schema/mysql.sql");
 
     if ($account && $regId) {
         $elgg_post = 1;
