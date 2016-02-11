@@ -8,9 +8,17 @@ $key_view = elgg_view('input/text', array(
 	'class' => 'text_input',
 ));
 
+$logo_string = elgg_echo('Enter site logo url here. <i>(Example: http://domain.com/some/path/to/image.jpg)</i>');
+$logo_view = elgg_view('input/url', array(
+	'name' => 'params[ws_get_logo]',
+	'value' => $vars['entity']->ws_get_logo,
+	'class' => 'text_input',
+));
+
 $settings = <<<__HTML
 <div>$insert_view</div>
 <div>$key_string $key_view</div>
+<div>$logo_string $logo_view</div>
 __HTML;
 
 echo $settings;

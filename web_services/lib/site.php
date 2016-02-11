@@ -24,7 +24,7 @@ function site_getinfo() {
     $siteinfo['url'] = elgg_get_site_url();
     $siteinfo['sitename'] = $site->name;
     $siteinfo['api_key'] = get_api_key();
-    $siteinfo['logo'] = get_logo();
+    $siteinfo['logo'] = elgg_get_plugin_setting('ws_get_logo', 'web_services');
     if ($site->description == null) {
         $siteinfo['description'] = '';
     } else {
@@ -34,19 +34,4 @@ function site_getinfo() {
     $siteinfo['language'] = elgg_get_config('language');
 
     return $siteinfo;
-}
-
-function get_logo($site_guid=1) {
-    global $CONFIG;
-    $query = "SELECT * from {$CONFIG->dbprefix}sites_entity"
-        . " where guid=$site_guid";
-
-    $site_data = get_data_row($query);
-
-    $return = $site_data->logo;
-
-    if ($return === null) {
-        $return ='';
-    }
-    return $return;
 }
