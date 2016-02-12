@@ -87,6 +87,7 @@ function wire_get_posts($context, $limit = 20, $offset = 0, $username) {
 			'types' => 'object',
 			'subtypes' => 'thewire',
 			'limit' => $limit,
+            'offset' => $offset,
 			'full_view' => FALSE,
 		);
 	}
@@ -96,6 +97,7 @@ function wire_get_posts($context, $limit = 20, $offset = 0, $username) {
 			'subtypes' => 'thewire',
 			'owner_guid' => $user->guid,
 			'limit' => $limit,
+            'offset' => $offset,
 			'full_view' => FALSE,
 		);
 	}
@@ -140,6 +142,7 @@ function wire_get_posts($context, $limit = 20, $offset = 0, $username) {
                 "metadata_value" => $single->guid,
                 "type" => "object",
                 "subtype" => "thewire",
+                "limit" => 0,
             );
 
             $comments = get_elgg_comments($options, 'elgg_get_entities_from_metadata');
