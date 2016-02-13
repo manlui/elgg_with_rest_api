@@ -87,10 +87,8 @@ function mobile_notifications_send($hook, $type, $result, $params) {
 	include_once elgg_get_plugins_path().'web_services/lib/GCM.php';
 	$gcm = new GCM();
 	$result = $gcm->setup_message($sender->name, $sender->username, $recipient->name, $recipient->username, $message->subject, $message->body);
-	if ($result) {
-	echo "Message sent successfully";
-	} else {
-	echo "Failed to send message";
+	if (!$result){
+	error_log('Failed to send message');
 	}	
 }
 
