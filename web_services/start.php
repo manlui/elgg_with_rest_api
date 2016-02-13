@@ -63,6 +63,33 @@ function ws_init() {
 
 
     elgg_register_plugin_hook_handler('unit_test', 'system', 'ws_unit_test');
+	elgg_register_plugin_hook_handler('send', 'notification:site', 'mobile_notifications_send');
+}
+
+/**
+ * Send an Mobile notification
+ *
+ * @param string $hook   Hook name
+ * @param string $type   Hook type
+ * @param bool   $result Has anyone sent a message yet?
+ * @param array  $params Hook parameters
+ * @return bool
+ * @access private
+ */
+function mobile_notifications_send($hook, $type, $result, $params) {
+    
+	// Sender and Recipient Information to get name and username
+	$message = $params['notification'];
+    $sender = $message->getSender();
+	$recipient = $message->getRecipient();
+	
+	//Send GCN to Mobile
+	include_once elgg_get_plugins_path().'web_services/lib/GCM.php';
+	$gcm = new GCM();
+	$result = $gcm->setup_message($sender->name, $sender->username, $recipient->name, $recipient->username, $message->subject, $message->body);
+	if (!$result){
+	error_log('Failed to send message');
+	}	
 }
 
 /**
