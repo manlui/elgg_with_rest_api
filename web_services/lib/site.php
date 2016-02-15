@@ -23,7 +23,6 @@ function site_getinfo() {
     $site = elgg_get_config('site');
     $siteinfo['url'] = elgg_get_site_url();
     $siteinfo['sitename'] = $site->name;
-    $siteinfo['api_key'] = get_api_key();
     $siteinfo['logo'] = elgg_get_plugin_setting('ws_get_logo', 'web_services');
     if ($site->description == null) {
         $siteinfo['description'] = '';
