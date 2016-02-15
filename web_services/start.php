@@ -22,6 +22,7 @@ function ws_init() {
 	elgg_register_library('elgg:ws:site', "$lib_dir/site.php");
 	elgg_register_library('elgg:ws:auth', "$lib_dir/auth.php");
 	elgg_register_library('elgg:ws:blog', "$lib_dir/blog.php");
+	elgg_register_library('elgg:ws:bookmark', "$lib_dir/bookmark.php");
 
 	elgg_load_library('elgg:ws:api_user');
 	elgg_load_library('elgg:ws:tokens');
@@ -36,6 +37,7 @@ function ws_init() {
 	elgg_load_library('elgg:ws:site');
 	elgg_load_library('elgg:ws:auth');
 	elgg_load_library('elgg:ws:blog');
+	elgg_load_library('elgg:ws:bookmark');
 
 	elgg_register_page_handler('services', 'ws_page_handler');
 
