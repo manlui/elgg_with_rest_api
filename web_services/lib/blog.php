@@ -143,27 +143,12 @@ elgg_ws_expose_function('blog.get_posts',
  * @internal param string $text the content of blog
  * @internal param string $username username of author
  */
-function blog_save($title, $description, $excerpt, $tags , $access, $container_guid) {
+function blog_save_post($title, $description, $tags , $access, $excerpt) {
     $user = elgg_get_logged_in_user_entity();
     if (!$user) {
         throw new InvalidParameterException('registration:usernamenotvalid');
     }
 
-    $obj = new ElggObject();
-    $obj->subtype = "blog";
-    $obj->owner_guid = $user->guid;
-    $obj->container_guid = $container_guid;
-    $obj->access_id = strip_tags($access);
-    $obj->method = "api";
-    $obj->description = strip_tags($description);
-    $obj->title = elgg_substr(strip_tags($title), 0, 140);
-    $obj->status = 'published';
-    $obj->comments_on = 'On';
-    $obj->excerpt = strip_tags($excerpt);
-    $obj->tags = strip_tags($tags);
-    $guid = $obj->save();
-
-    $access_id = -2;
     if ($access == 'ACCESS_FRIENDS') {
         $access_id = -2;
     } elseif ($access == 'ACCESS_PRIVATE') {
@@ -176,31 +161,49 @@ function blog_save($title, $description, $excerpt, $tags , $access, $container_g
         $access_id = -2;
     }
 
-    elgg_create_river_item(array(
-        'view' => 'river/object/blog/create',
-        'action_type' => 'create',
-        'subject_guid' => $user->guid,
-        'object_guid' => $obj->guid,
-        'target_guid' => 0,
-        'access_id' => $access_id,
-        'posted' => 0,
-        'annotation_id' => 0,
-    ));
 
-    $return['success'] = true;
+    $blog = new ElggBlog();
+    $blog->subtype = "blog";
+    $blog->owner_guid = $user->guid;
+    $blog->container_guid = $user->guid;
+    $blog->access_id = $access_id;
+    $blog->description = strip_tags($description);
+    $blog->title = elgg_substr(strip_tags($title), 0, 140);
+    $blog->status = 'published';
+    $blog->comments_on = 'On';
+    $blog->excerpt = strip_tags($excerpt);
+    $blog->tags = string_to_tag_array($tags);
+
+    $guid = $blog->save();
+    $status = $blog->status;
+
+    if ($guid > 0 && $status ==  'published') {
+
+        elgg_create_river_item(array(
+            'view' => 'river/object/blog/create',
+            'action_type' => 'create',
+            'subject_guid' => $blog->owner_guid,
+            'object_guid' => $blog->getGUID(),
+        ));
+
+        $return['success'] = $guid;
+    } else {
+        $return['success'] = 0;
+        $return['message'] = elgg_echo('blog:message:fail');
+    }
+
     $return['message'] = elgg_echo('blog:message:saved');
     return $return;
 }
 
 elgg_ws_expose_function('blog.save_post',
-    "blog_save",
+    "blog_save_post",
     array(
         'title' => array ('type' => 'string', 'required' => true),
         'description' => array ('type' => 'string', 'required' => true),
-        'excerpt' => array ('type' => 'string', 'required' => false),
         'tags' => array ('type' => 'string', 'required' => false, 'default' => "blog"),
         'access' => array ('type' => 'string', 'required' => false, 'default'=>ACCESS_PUBLIC),
-        'container_guid' => array ('type' => 'int', 'required' => false, 'default' => 0),
+        'excerpt' => array ('type' => 'string', 'required' => false, 'default' => ""),
     ),
     "Post a blog post",
     'POST',
