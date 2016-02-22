@@ -94,7 +94,7 @@ function bookmark_get_posts($context,  $limit = 20, $offset = 0, $username) {
                 $bookmark['title'] = '';
             }
 
-            $bookmark['time_create'] = time_ago($single->time_created);
+            $bookmark['time_created'] = time_ago($single->time_created);
             if ($single->description != null) {
                 if (strlen($single->description) > 300) {
                     $entityString = substr(strip_tags($single->description), 0, 300);
@@ -112,7 +112,7 @@ function bookmark_get_posts($context,  $limit = 20, $offset = 0, $username) {
             if ($single->tags == null) {
                 $bookmark['tags'] = '';
             } else {
-                $bookmark['tags'] = $single->tags;
+                $bookmark['tags'] = implode(",", $single->tags);
             }
 
             $bookmark['like_count'] = likes_count_number_of_likes($single->guid);
@@ -171,14 +171,14 @@ function bookmark_get_post($guid, $username) {
     $loginUser = elgg_get_logged_in_user_entity();
 
     $return['guid'] = $guid;
-    $return['title'] = strip_tags($bookmark->title);
+    $return['title'] = $bookmark->title;
     $return['description'] = $bookmark->description;
     $return['address'] = $bookmark->address;
 
     if ($bookmark->tags == null) {
         $return['tags'] = '';
     } else {
-        $return['tags'] = $bookmark->tags;
+        $return['tags'] = implode(",", $bookmark->tags);
     }
 
     $comments = elgg_get_entities(array(
@@ -331,6 +331,120 @@ elgg_ws_expose_function('bookmark.post_comment',
     'POST',
     true,
     true);
+
+
+function bookmark_save_post($title, $address, $description, $access, $username, $tags){
+    if(!$username) {
+        $user = elgg_get_logged_in_user_entity();
+    } else {
+        $user = get_user_by_username($username);
+        if (!$user) {
+            throw new InvalidParameterException('registration:usernamenotvalid');
+        }
+    }
+
+    $loginUser = elgg_get_logged_in_user_entity();
+    $guid = 0;
+
+    if ($access == 'ACCESS_FRIENDS') {
+        $access_id = -2;
+    } elseif ($access == 'ACCESS_PRIVATE') {
+        $access_id = 0;
+    } elseif ($access == 'ACCESS_LOGGED_IN') {
+        $access_id = 1;
+    } elseif ($access == 'ACCESS_PUBLIC') {
+        $access_id = 2;
+    } else {
+        $access_id = -2;
+    }
+
+//    $share = get_input('share');
+    $container_guid = $user->guid;
+
+// don't use elgg_normalize_url() because we don't want
+// relative links resolved to this site.
+    if ($address && !preg_match("#^((ht|f)tps?:)?//#i", $address)) {
+        $address = "http://$address";
+    }
+
+    if (!$title || !$address) {
+        register_error(elgg_echo('bookmarks:save:failed'));
+        throw new InvalidParameterException('bookmarks:save:failed');
+    }
+
+// see https://bugs.php.net/bug.php?id=51192
+    $php_5_2_13_and_below = version_compare(PHP_VERSION, '5.2.14', '<');
+    $php_5_3_0_to_5_3_2 = version_compare(PHP_VERSION, '5.3.0', '>=') &&
+        version_compare(PHP_VERSION, '5.3.3', '<');
+
+    $validated = false;
+    if ($php_5_2_13_and_below || $php_5_3_0_to_5_3_2) {
+        $tmp_address = str_replace("-", "", $address);
+        $validated = filter_var($tmp_address, FILTER_VALIDATE_URL);
+    } else {
+        $validated = filter_var($address, FILTER_VALIDATE_URL);
+    }
+    if (!$validated) {
+        register_error(elgg_echo('bookmarks:save:failed'));
+        throw new InvalidParameterException('bookmarks:save:failed');
+    }
+
+    if ($guid == 0) {
+        $bookmark = new ElggObject;
+        $bookmark->subtype = "bookmarks";
+        $bookmark->container_guid = $container_guid;
+        $new = true;
+    } else {
+        $bookmark = get_entity($guid);
+        if (!$bookmark->canEdit()) {
+            system_message(elgg_echo('bookmarks:save:failed'));
+        }
+    }
+
+    $tagarray = string_to_tag_array($tags);
+
+    $bookmark->title = $title;
+    $bookmark->address = $address;
+    $bookmark->description = $description;
+    $bookmark->access_id = $access_id;
+    $bookmark->tags = $tagarray;
+
+    if ($bookmark->save()) {
+
+        //add to river only if new
+        if ($new) {
+            elgg_create_river_item(array(
+                'view' => 'river/object/bookmarks/create',
+                'action_type' => 'create',
+                'subject_guid' => $user->guid,
+                'object_guid' => $bookmark->getGUID(),
+            ));
+
+        }
+        $return['guid'] = $bookmark->guid;
+    } else {
+        register_error(elgg_echo('bookmarks:save:failed'));
+        $return['guid'] = 0;
+    }
+
+    return $return;
+}
+
+elgg_ws_expose_function('bookmark.save_post',
+    "bookmark_save_post",
+    array(
+        'title' => array ('type' => 'string', 'required' => true),
+        'address' => array ('type' => 'string', 'required' => true),
+        'description' => array ('type' => 'string', 'required' => true,),
+        'access' => array ('type' => 'string', 'required' => true, 'default'=>ACCESS_FRIENDS),
+        'username' => array ('type' => 'string', 'required' => true),
+        'tags' => array ('type' => 'string', 'required' => false, 'default' => ""),
+    ),
+    "Post a bookmark post",
+    'POST',
+    true,
+    true);
+
 
 
 function getOwner($guid) {

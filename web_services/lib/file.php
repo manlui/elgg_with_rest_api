@@ -138,12 +138,15 @@ function file_get_files($context, $limit = 20, $offset = 0, $group_guid, $userna
 			$file['guid'] = $single->guid;
 			$file['title'] = $single->title;
 
-            if ($single->description == null) {
-                $file['description'] = '';
-            } else {
-                $file['description'] = strip_tags($single->description);
-            }
+			if ($single->description == null) {
+				$file['description'] = '';
+			} else if (strlen($single->description) > 300) {
+				$entityString = substr(strip_tags($single->description), 0, 300);
+				$file['description'] = preg_replace('/\W\w+\s*(\W*)$/', '$1', $entityString) . '...';
 
+			} else {
+				$file['description'] = strip_tags($single->description);
+			}
 
 			$owner = get_entity($single->owner_guid);
 			$file['owner']['guid'] = $owner->guid;
@@ -172,7 +175,15 @@ function file_get_files($context, $limit = 20, $offset = 0, $group_guid, $userna
             }
 
 			$file['like_count'] = likes_count_number_of_likes($single->guid);
-			$file['comment_count'] = api_get_image_comment_count($single->guid);
+
+			$comments = elgg_get_entities(array(
+				'type' => 'object',
+				'subtype' => 'comment',
+				'container_guid' => $single->guid,
+				'limit' => 0,
+			));
+
+			$file['comment_count'] = sizeof($comments);
 			$file['like'] = checkLike($single->guid, $user->guid);
 
 			$return[] = $file;
@@ -407,7 +418,7 @@ function file_get_comments($guid, $username, $limit = 20, $offset = 0){
     if($comments){
         foreach($comments as $single){
             $comment['guid'] = $single->guid;
-            $comment['description'] = $single->description;
+            $comment['description'] = strip_tags($single->description);
 
             $owner = get_entity($single->owner_guid);
             $comment['owner']['guid'] = $owner->guid;

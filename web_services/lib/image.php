@@ -6,28 +6,13 @@
  * @param int $access
  * @param $album_guid
  * @param $username
+ * @param $title
+ * @param $caption
  * @return
  * @throws InvalidParameterException
  */
 
-function image_save_post($access = ACCESS_PUBLIC, $album_guid, $username) {
-    $path = elgg_get_plugins_path();
-    include_once $path.'tidypics/lib/upload.php';
-
-    $file = $_FILES["Image"];
-    $imageMime = getimagesize($file['tmp_name']); // get temporary file REAL info
-    $file['type'] = $imageMime['mime'];
-
-    $album_guid = (int) $_POST["album_guid"];
-
-    if ($album_guid == 0) {
-        $response['status'] = 1;
-        $response['result'] = "Album guid is zero";
-
-        return $response;
-        exit;
-    }
-
+function image_save_post($access = ACCESS_FRIENDS, $album_guid, $username, $title, $caption) {
     if(!$username) {
         $user = elgg_get_logged_in_user_entity();
     } else {
@@ -36,14 +21,23 @@ function image_save_post($access = ACCESS_PUBLIC, $album_guid, $username) {
             throw new InvalidParameterException('registration:usernamenotvalid');
         }
     }
+    $path = elgg_get_plugins_path();
+    include_once $path.'tidypics/lib/upload.php';
+
+    $file = $_FILES["Image"];
+    $imageMime = getimagesize($file['tmp_name']); // get temporary file REAL info
+    $file['type'] = $imageMime['mime'];
+
+    if ($album_guid == 0) {
+        $album_guid = album_getid($user->username);
+
+    }
 
     if (empty($file)) {
         $response['status'] = 1;
         $response['result'] = elgg_echo("image:blank");
         return $response;
     }
-
-    $access_id = -2;
 
     if ($access == 'ACCESS_FRIENDS') {
         $access_id = -2;
@@ -66,22 +60,20 @@ function image_save_post($access = ACCESS_PUBLIC, $album_guid, $username) {
         return $response;
     }
 
-    $description = get_input('caption');
-
     $image = new TidypicsImage();
     $image->container_guid = $album_guid;
-    $image->setMimeType($_POST["type"]);
+    $image->setMimeType($file['type']);
     $image->access_id = $access_id;
     $image->batch = $batch_id;
     $image->owner_guid = $user->guid;
-    $image->description = $description;
+    $image->description = $caption;
+    $image->title = $title;
 
     try {
         $result = $image->save($file);
 
     } catch (Exception $e) {
         // remove the bits that were saved
-//        delete_entity($image->getGUID());
         if ($image_entity = get_entity($image->getGUID())) {
             $recursive = true;
             if ($image_entity->delete($recursive)) {
@@ -106,7 +98,7 @@ function image_save_post($access = ACCESS_PUBLIC, $album_guid, $username) {
         $batch->access_id = $album->access_id;
         $batch->container_guid = $album->guid;
         $batch->owner_guid = $user->guid;
-        $batch->description = $description;
+        $batch->description = $caption;
 
         if ($batch->save()) {
             add_entity_relationship($image->guid, "belongs_to_batch", $batch->getGUID());
@@ -182,7 +174,8 @@ elgg_ws_expose_function('image.save_post',
         'access' => array ('type' => 'string', 'required' => true),
         'album_guid' => array ('type' => 'string', 'required' => true),
         'username' => array ('type' => 'string', 'required' => true),
-        'type' => array ('type' => 'string', 'required' => true),
+        'title' => array ('type' => 'string', 'required' => false, 'default' => ''),
+        'caption' => array ('type' => 'string', 'required' => false, 'default' => ''),
     ),
     "Post a image post",
     'POST',
@@ -222,7 +215,7 @@ function wire_get_image_comments($guid, $username, $limit = 20, $offset = 0){
             $response['type'] = $comment->type;
             $response['id'] = $comment->guid;
             $response['container_guid'] = $comment->container_guid;
-            $response['description'] = $comment->description;
+            $response['description'] = strip_tags($comment->description);
 
             $owner = get_entity($comment->owner_guid);
             $response['owner']['guid'] = $owner->guid;
@@ -325,7 +318,7 @@ elgg_ws_expose_function('wire.post_image_comment',
 function image_get_photos($context,  $limit = 20, $offset = 0, $username) {
 
     if(!$username) {
-        //$user = elgg_get_logged_in_user_entity();
+        $user = elgg_get_logged_in_user_entity();
         throw new InvalidParameterException('registration:usernamenotvalid');
     } else {
         $user = get_user_by_username($username);

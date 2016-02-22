@@ -73,13 +73,9 @@ elgg_ws_expose_function('messages.count',
  */
 function messages_inbox($limit = 20, $offset = 0) {
 
-    $user = get_user_by_username(get_input('username'));
+	$user = elgg_get_logged_in_user_entity();
 	if (!$user) {
 		throw new InvalidParameterException('registration:usernamenotvalid');
-		$response['status'] = 1;
-		$response['result'] = 'user account not valid';
-		return $response;
-		exit;
 	}
 
 	$params = array(
@@ -144,10 +140,13 @@ elgg_ws_expose_function('messages.inbox',
  * @return array $mesage Array of files uploaded
  * @throws InvalidParameterException
  */
-function messages_sent($limit = 10, $offset = 0) {	
+function messages_sent($limit = 10, $offset = 0) {
 
-	$user = get_loggedin_user();
-//    $user = get_user_by_username($username);
+	$user = elgg_get_logged_in_user_entity();
+	if (!$user) {
+		throw new InvalidParameterException('registration:usernamenotvalid');
+	}
+
 	$params = array(
 		'type' => 'object',
 		'subtype' => 'messages',
@@ -217,10 +216,6 @@ function message_send($subject,$body, $send_to, $reply = 0) {
 	$recipient = get_user_by_username($send_to);
 	if (!$recipient) {
 		throw new InvalidParameterException('registration:usernamenotvalid');
-		$response['status'] = 1;
-		$response['result'] = 'Recipient account not valid';
-		return $response;
-		exit;
 	}
 
 	$recipient_guid = $recipient->guid;

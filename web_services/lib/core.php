@@ -300,6 +300,7 @@ function api_get_image_comment_count($image_guid) {
         'type' => 'object',
         'subtype' => 'comment',
         'container_guid' => $image_guid,
+        'limit' => 0,
     ));
 
     return sizeof($comments);
@@ -356,6 +357,7 @@ function getRiverActivity($activities, $user, $login_user) {
         $icon_url="";
         $img_url="";
         $message_board="";
+        $container_entity="";
         $batch_images = array();
         $isObject = false;
 
@@ -364,7 +366,7 @@ function getRiverActivity($activities, $user, $login_user) {
             $batch_images = getBatchImages($activity->object_guid, $user->guid);
 
             if (sizeof($batch_images) > 1) {
-                $entityTxt = "added the photos to the album.";
+                $entityTxt = "added the photos to the album";
 
                 $album_guid = $batch_images[0]['container_guid'];
 
@@ -379,15 +381,34 @@ function getRiverActivity($activities, $user, $login_user) {
 
                 $img = get_entity($batch_images[0]['guid']);
                 $original_file_name = $img->originalfilename;
-                $entityTxt = "added the photo " . $original_file_name . " to the album.";
+                $container_entity = get_entity($entity->container_guid);
+                if ($img->title != null) {
+                    $entityTxt = "added the photo " . $img->title . " to the album " . $container_entity->title;
+                } else {
+                    $entityTxt = "added the photo " . $original_file_name . " to the album " . $container_entity->title;
+                }
 
-                $entityString = $img->description;
+                if ($img->description != null) {
+                    if (strlen($img->description) > 300) {
+                        $entityString = substr(strip_tags($img->description), 0, 300);
+                        $entityString = preg_replace('/\W\w+\s*(\W*)$/', '$1', $entityString) . '...';
+                    } else {
+                        $entityString = strip_tags($img->description);
+                    }
+                } else {
+                    $entityString = '';
+                }
             }
         }  else if ($activity->action_type == "create" && $activity->subtype == "album") {
             $isObject = true;
 
             $album = get_entity($activity->object_guid);
             $entityTxt = "created a new photo album " . $album->title;
+
+            $container_entity = get_entity($entity->container_guid);
+            if ($container_entity->type == 'group') {
+                $entityTxt = $entityTxt . ' in the group ' . $container_entity->name;
+            }
 
             $album_cover = $album->getCoverImage();
 
@@ -440,7 +461,13 @@ function getRiverActivity($activities, $user, $login_user) {
             $entityString = strip_tags($entityString);
         } else if ($activity->subtype == "file" && $activity->action_type == "create" && $activity->view == 'river/object/file/create') {
             $isObject = true;
-            $entityTxt = 'uploaded the file ' . $entity->title;
+
+            $container_entity = get_entity($entity->container_guid);
+            if ($container_entity->type == 'group') {
+                $entityTxt = 'uploaded the file ' . $entity->title . ' in the group ' . $container_entity->name;
+            } else {
+                $entityTxt = 'uploaded the file ' . $entity->title;
+            }
 
             if ($entity->description != null) {
                 $entityString = $entity->description;
@@ -502,19 +529,76 @@ function getRiverActivity($activities, $user, $login_user) {
             $isObject = true;
             $post_on_entity = get_entity($activity->object_guid);
             $message_board = elgg_get_annotation_from_id($activity->annotation_id);
+
             $entityTxt = 'posted on ' . $post_on_entity->name . '\'s message board';
             $entityString = strip_tags($message_board->value);
 
         } else if ($activity->action_type == "create" && $activity->view == 'river/object/blog/create' && $activity->subtype == 'blog') {
             $isObject = true;
-            $entityTxt = 'published a blog post ' . $entity->title;
-            if (strlen($entity->description) > 300) {
-                $entityString = substr(strip_tags($entity->description), 0, 300);
-                $entityString = preg_replace('/\W\w+\s*(\W*)$/', '$1', $entityString) . '...';
-
+            $container_entity = get_entity($entity->container_guid);
+            if ($container_entity->type == 'group') {
+                $entityTxt = 'published a blog post ' . $entity->title . ' in the group ' . $container_entity->name;
             } else {
-                $entityString = strip_tags($entity->description);
+                $entityTxt = 'published a blog post ' . $entity->title;
             }
+
+            if ($entity->description != null) {
+                if (strlen($entity->description) > 300) {
+                    $entityString = substr(strip_tags($entity->description), 0, 300);
+                    $entityString = preg_replace('/\W\w+\s*(\W*)$/', '$1', $entityString) . '...';
+                } else {
+                    $entityString = strip_tags($entity->description);
+                }
+            } else {
+                $entityString = '';
+            }
+        }  else if ($activity->subtype == "bookmarks" && $activity->action_type == "create" && $activity->view == 'river/object/bookmarks/create') {
+            $isObject = true;
+            $entity = get_entity($activity->object_guid);
+            $container_entity = get_entity($entity->container_guid);
+            if ($container_entity->type == 'group') {
+                $entityTxt = 'bookmarked ' . $entity->title . ' in the group ' . $container_entity->name;
+            } else {
+                $entityTxt = 'bookmarked ' . $entity->title;
+            }
+
+            if ($entity->description != null) {
+                if (strlen($entity->description) > 300) {
+                    $entityString = substr(strip_tags($entity->description), 0, 300);
+                    $entityString = preg_replace('/\W\w+\s*(\W*)$/', '$1', $entityString) . '...';
+
+                } else {
+                    $entityString = $entity->description;
+                }
+            } else {
+                $entityString = '';
+            }
+            $entityString = strip_tags($entityString);
+            $img_url = $entity->address;
+
+        } else if ($activity->subtype == "discussion_reply" && $activity->action_type == "reply" && $activity->view == 'river/object/discussion_reply/create') {
+            $isObject = true;
+            $target_entity = get_entity($activity->target_guid);
+            $entityTxt = 'replied on the discussion topic ' . $target_entity->title;
+            $entityString = $entity->description;
+            $entityString = strip_tags($entityString);
+        }  else if ($activity->subtype == "groupforumtopic" && $activity->action_type == "create" && $activity->view == 'river/object/groupforumtopic/create') {
+            $isObject = true;
+            $container_entity = get_entity($entity->container_guid);
+            $entityTxt = 'added a new discussion topic ' . $entity->title . ' in the group ' . $container_entity->name;
+
+            if ($entity->description != null) {
+                if (strlen($entity->description) > 300) {
+                    $entityString = substr(strip_tags($entity->description), 0, 300);
+                    $entityString = preg_replace('/\W\w+\s*(\W*)$/', '$1', $entityString) . '...';
+                } else {
+                    $entityString = $entity->description;
+                }
+                $entityString = strip_tags($entityString);
+            } else {
+                $entityString = '';
+            }
+
         } else {
             //$isObject = true;
             //$entityTxt = get_object_entity_as_row($activity->object_guid)->description;
@@ -559,7 +643,7 @@ function getCommentCount($activity) {
             "metadata_value" => $activity->object_guid,
             "type" => "object",
             "subtype" => "thewire",
-            "limit" => 99,
+            "limit" => 0,
         );
 
         $comments = get_elgg_comments($options, 'elgg_get_entities_from_metadata');
@@ -568,7 +652,7 @@ function getCommentCount($activity) {
             'type' => 'object',
             'subtype' => 'comment',
             'container_guid' => $activity->object_guid,
-            "limit" => 99,
+            "limit" => 0,
         ));
     }
 

@@ -24,7 +24,7 @@ function user_get_profile_fields() {
 function user_get_profile($username) {
 	//if $username is not provided then try and get the loggedin user
 	if(!$username){
-		$user = get_loggedin_user();
+		$user = elgg_get_logged_in_user_entity();
 	} else {
 		$user = get_user_by_username($username);
 	}
@@ -70,7 +70,7 @@ function user_get_profile($username) {
  */
 function user_save_profile($username, $profile) {
 	if(!$username){
-		$user = get_loggedin_user();
+		$user = elgg_get_logged_in_user_entity();
 	} else {
 		$user = get_user_by_username($username);
 	}
@@ -254,7 +254,7 @@ function user_friend_add($friend, $username) {
 
 function user_friend_is_friend_of($friend, $username) {
 	if(!$username){
-		$user = get_loggedin_user();
+		$user = elgg_get_logged_in_user_entity();
 	} else {
 		$user = get_user_by_username($username);
 	}
@@ -290,7 +290,7 @@ function user_friend_is_friend_of($friend, $username) {
  */
 function user_friend_remove($friend,$username) {
 	if(!$username){
-		$user = get_loggedin_user();
+		$user = elgg_get_logged_in_user_entity();
 	} else {
 		$user = get_user_by_username($username);
 	}
@@ -335,7 +335,7 @@ function user_get_friends($username, $limit = 10, $offset = 0) {
 	if($username){
 		$user = get_user_by_username($username);
 	} else {
-		$user = get_loggedin_user();
+		$user = elgg_get_logged_in_user_entity();
 	}
 	if (!$user) {
 		throw new InvalidParameterException(elgg_echo('registration:usernamenotvalid'));
@@ -369,7 +369,7 @@ function user_get_friends($username, $limit = 10, $offset = 0) {
  */
 function user_get_friends_of($username, $limit = 10, $offset = 0) {
 	if(!$username){
-		$user = get_loggedin_user();
+		$user = elgg_get_logged_in_user_entity();
 	} else {
 		$user = get_user_by_username($username);
 	}
@@ -406,7 +406,7 @@ function user_get_friends_of($username, $limit = 10, $offset = 0) {
  */
 function user_get_messageboard($limit = 10, $offset = 0, $username){
 	if(!$username){
-		$user = get_loggedin_user();
+		$user = elgg_get_logged_in_user_entity();
 	} else {
 		$user = get_user_by_username($username);
 		if (!$user) {
@@ -596,7 +596,7 @@ function user_search($username, $limit = 20, $offset = 0, $search_name)
                     $member['guid'] = $result->get("guid");
                     $member['name'] = $result->get("name");
                     $member['username'] = $result->get("username");
-                    $member['avatar_url'] = get_entity_icon_url($result,'small');
+                    $member['avatar_url'] = $result->getIconURL();
 
                     if ($friend_user->isFriendOf($user->guid)) {
                         $member['friend'] = 'FRIEND';

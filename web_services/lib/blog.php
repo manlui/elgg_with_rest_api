@@ -98,10 +98,15 @@ function blog_get_posts($context,  $limit = 10, $offset = 0,$group_guid, $userna
                 'type' => 'object',
                 'subtype' => 'comment',
                 'container_guid' => $single->guid,
-                "limit" => 99,
+                "limit" => 0,
             ));
 
             $blog['comment_count'] = sizeof($comments);
+            if ($single->tags == null) {
+                $blog['tags'] = '';
+            } else {
+                $blog['tags'] = implode(",", $single->tags);
+            }
 
             $return[] = $blog;
         }
@@ -132,21 +137,29 @@ elgg_ws_expose_function('blog.get_posts',
  * Web service for making a blog post
  *
  * @param string $title the title of blog
- * @param $description
- * @param string $excerpt the excerpt of blog
- * @param string $tags tags for blog
+ * @param $body
+ * @param $comment_status
  * @param string $access Access level of blog
  *
- * @param $container_guid
+ * @param $status
+ * @param $username
+ * @param string $tags tags for blog
+ * @param string $excerpt the excerpt of blog
  * @return bool
  * @throws InvalidParameterException
+ * @internal param $description
+ * @internal param $container_guid
  * @internal param string $text the content of blog
  * @internal param string $username username of author
  */
-function blog_save_post($title, $description, $tags , $access, $excerpt) {
-    $user = elgg_get_logged_in_user_entity();
-    if (!$user) {
-        throw new InvalidParameterException('registration:usernamenotvalid');
+function blog_save_post($title, $body, $comment_status, $access, $status, $username, $tags, $excerpt) {
+    if(!$username) {
+        $user = elgg_get_logged_in_user_entity();
+    } else {
+        $user = get_user_by_username($username);
+        if (!$user) {
+            throw new InvalidParameterException('registration:usernamenotvalid');
+        }
     }
 
     if ($access == 'ACCESS_FRIENDS') {
@@ -167,17 +180,17 @@ function blog_save_post($title, $description, $tags , $access, $excerpt) {
     $blog->owner_guid = $user->guid;
     $blog->container_guid = $user->guid;
     $blog->access_id = $access_id;
-    $blog->description = strip_tags($description);
+    $blog->description = $body;
     $blog->title = elgg_substr(strip_tags($title), 0, 140);
-    $blog->status = 'published';
-    $blog->comments_on = 'On';
+    $blog->status = $status;
+    $blog->comments_on = $comment_status;
     $blog->excerpt = strip_tags($excerpt);
     $blog->tags = string_to_tag_array($tags);
 
     $guid = $blog->save();
-    $status = $blog->status;
+    $newStatus = $blog->status;
 
-    if ($guid > 0 && $status ==  'published') {
+    if ($guid > 0 && $newStatus == 'published') {
 
         elgg_create_river_item(array(
             'view' => 'river/object/blog/create',
@@ -186,13 +199,20 @@ function blog_save_post($title, $description, $tags , $access, $excerpt) {
             'object_guid' => $blog->getGUID(),
         ));
 
-        $return['success'] = $guid;
+        elgg_trigger_event('publish', 'object', $blog);
+
+        if ($guid) {
+            $blog->time_created = time();
+            $blog->save();
+        }
+
+        $return['guid'] = $guid;
+        $return['message'] = $newStatus;
     } else {
-        $return['success'] = 0;
-        $return['message'] = elgg_echo('blog:message:fail');
+        $return['guid'] = $guid;
+        $return['message'] = $status;
     }
 
-    $return['message'] = elgg_echo('blog:message:saved');
     return $return;
 }
 
@@ -200,9 +220,12 @@ elgg_ws_expose_function('blog.save_post',
     "blog_save_post",
     array(
         'title' => array ('type' => 'string', 'required' => true),
-        'description' => array ('type' => 'string', 'required' => true),
-        'tags' => array ('type' => 'string', 'required' => false, 'default' => "blog"),
-        'access' => array ('type' => 'string', 'required' => false, 'default'=>ACCESS_PUBLIC),
+        'body' => array ('type' => 'string', 'required' => true),
+        'comment_status' => array ('type' => 'string', 'required' => true, 'default' => "On"),
+        'access' => array ('type' => 'string', 'required' => true, 'default'=>ACCESS_FRIENDS),
+        'status' => array ('type' => 'string', 'required' => true, 'default' => "published"),
+        'username' => array ('type' => 'string', 'required' => true),
+        'tags' => array ('type' => 'string', 'required' => false, 'default' => ""),
         'excerpt' => array ('type' => 'string', 'required' => false, 'default' => ""),
     ),
     "Post a blog post",
@@ -308,17 +331,17 @@ function blog_get_post($guid, $username) {
     if ($blog->tags == null) {
         $return['tags'] = '';
     } else {
-        $return['tags'] = $blog->tags;
+        $return['tags'] = implode(",", $blog->tags);
     }
 
     $comments = elgg_get_entities(array(
         'type' => 'object',
         'subtype' => 'comment',
         'container_guid' => $guid,
+        'limit' => 0,
     ));
 
     $return['owner'] = getBlogOwner($blog->owner_guid);
-    //$return['owner_guid'] = $blog->owner_guid;
     $return['access_id'] = $blog->access_id;
     $return['status'] = $blog->status;
     $return['comments_on'] = $blog->comments_on;
