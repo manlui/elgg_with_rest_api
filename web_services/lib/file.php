@@ -314,6 +314,12 @@ elgg_ws_expose_function('file.get_post',
 	true);
 
 
+/**
+ * @param $guid
+ * @param $username
+ * @return array
+ * @throws InvalidParameterException
+ */
 function file_get_file($guid, $username) {
     if(!$username) {
         $user = elgg_get_logged_in_user_entity();
@@ -450,3 +456,187 @@ elgg_ws_expose_function('file.get_comments',
     'GET',
     true,
     true);
+
+/**
+ * @param $title
+ * @param $description
+ * @param $username
+ * @param $access
+ * @param $tags
+ * @return array
+ * @throws InvalidParameterException
+ * @internal param $guid
+ * @internal param $size
+ */
+function file_save_post($title, $description, $username, $access, $tags) {
+	$return = array();
+	if(!$username) {
+		$user = elgg_get_logged_in_user_entity();
+	} else {
+		$user = get_user_by_username($username);
+		if (!$user) {
+			throw new InvalidParameterException('registration:usernamenotvalid');
+		}
+	}
+	$loginUser = elgg_get_logged_in_user_entity();
+	$container_guid = $loginUser->guid;
+
+	if ($access == 'ACCESS_FRIENDS') {
+		$access_id = -2;
+	} elseif ($access == 'ACCESS_PRIVATE') {
+		$access_id = 0;
+	} elseif ($access == 'ACCESS_LOGGED_IN') {
+		$access_id = 1;
+	} elseif ($access == 'ACCESS_PUBLIC') {
+		$access_id = 2;
+	} else {
+		$access_id = -2;
+	}
+
+	$file = $_FILES["upload"];
+
+	if (empty($file)) {
+		$response['status'] = 1;
+		$response['result'] = elgg_echo("file:blank");
+		return $response;
+	}
+
+	$new_file = true;
+
+	if ($new_file) {
+		$file = new FilePluginFile();
+		$file->subtype = "file";
+
+		// if no title on new upload, grab filename
+		if (empty($title)) {
+			$title = htmlspecialchars($_FILES['upload']['name'], ENT_QUOTES, 'UTF-8');
+		}
+
+	}
+
+	$file->title = $title;
+	$file->description = $description;
+	$file->access_id = $access_id;
+	$file->container_guid = $container_guid;
+	$file->tags = string_to_tag_array($tags);
+
+	// we have a file upload, so process it
+	if (isset($_FILES['upload']['name']) && !empty($_FILES['upload']['name'])) {
+
+		$prefix = "file/";
+
+		$filestorename = elgg_strtolower(time().$_FILES['upload']['name']);
+		$file->setFilename($prefix . $filestorename);
+		$file->originalfilename = $_FILES['upload']['name'];
+
+		$mime_type = $file->detectMimeType($_FILES['upload']['tmp_name'], $_FILES['upload']['type']);
+
+		$file->setMimeType($mime_type);
+		$file->simpletype = elgg_get_file_simple_type($mime_type);
+
+		// Open the file to guarantee the directory exists
+		$file->open("write");
+		$file->close();
+		move_uploaded_file($_FILES['upload']['tmp_name'], $file->getFilenameOnFilestore());
+
+		$fileSaved = $file->save();
+
+		// if image, we need to create thumbnails (this should be moved into a function)
+		if ($fileSaved && $file->simpletype == "image") {
+			$file->icontime = time();
+
+			$thumbnail = get_resized_image_from_existing_file($file->getFilenameOnFilestore(), 60, 60, true);
+			if ($thumbnail) {
+				$thumb = new ElggFile();
+				$thumb->setMimeType($_FILES['upload']['type']);
+
+				$thumb->setFilename($prefix."thumb".$filestorename);
+				$thumb->open("write");
+				$thumb->write($thumbnail);
+				$thumb->close();
+
+				$file->thumbnail = $prefix."thumb".$filestorename;
+				unset($thumbnail);
+			}
+
+			$thumbsmall = get_resized_image_from_existing_file($file->getFilenameOnFilestore(), 153, 153, true);
+			if ($thumbsmall) {
+				$thumb->setFilename($prefix."smallthumb".$filestorename);
+				$thumb->open("write");
+				$thumb->write($thumbsmall);
+				$thumb->close();
+				$file->smallthumb = $prefix."smallthumb".$filestorename;
+				unset($thumbsmall);
+			}
+
+			$thumblarge = get_resized_image_from_existing_file($file->getFilenameOnFilestore(), 600, 600, false);
+			if ($thumblarge) {
+				$thumb->setFilename($prefix."largethumb".$filestorename);
+				$thumb->open("write");
+				$thumb->write($thumblarge);
+				$thumb->close();
+				$file->largethumb = $prefix."largethumb".$filestorename;
+				unset($thumblarge);
+			}
+		} elseif ($file->icontime) {
+			// if it is not an image, we do not need thumbnails
+			unset($file->icontime);
+
+			$thumb = new ElggFile();
+
+			$thumb->setFilename($prefix . "thumb" . $filestorename);
+			$thumb->delete();
+			unset($file->thumbnail);
+
+			$thumb->setFilename($prefix . "smallthumb" . $filestorename);
+			$thumb->delete();
+			unset($file->smallthumb);
+
+			$thumb->setFilename($prefix . "largethumb" . $filestorename);
+			$thumb->delete();
+			unset($file->largethumb);
+		}
+	}  else {
+		// not saving a file but still need to save the entity to push attributes to database
+		$fileSaved = $file->save();
+	}
+
+	// handle results differently for new files and file updates
+	if ($new_file) {
+		if ($fileSaved) {
+			elgg_create_river_item(array(
+				'view' => 'river/object/file/create',
+				'action_type' => 'create',
+				'subject_guid' => elgg_get_logged_in_user_guid(),
+				'object_guid' => $file->guid,
+			));
+
+			$return['guid'] = $file->guid;
+			$return['message'] = 'success';
+		} else {
+			// failed to save file object - nothing we can do about this
+			$return['guid'] = 0;
+			$return['message'] = elgg_echo("file:uploadfailed");
+		}
+
+	} else {
+		$return['guid'] = 0;
+		$return['message'] = elgg_echo("file:uploadfailed");
+	}
+
+	return $return;
+}
+
+elgg_ws_expose_function('file.save_post',
+	"file_save_post",
+	array(
+		'title' => array ('type' => 'string', 'required' => true),
+		'description' => array ('type' => 'string', 'required' => true),
+		'username' => array ('type' => 'string', 'required' => true),
+		'access' => array ('type' => 'string', 'required' => true, 'default'=>ACCESS_FRIENDS),
+		'tags' => array ('type' => 'string', 'required' => false, 'default'=>''),
+	),
+	"Upload file post",
+	'POST',
+	true,
+	true);
