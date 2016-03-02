@@ -84,8 +84,8 @@ function messages_inbox($limit = 20, $offset = 0) {
 		'metadata_name' => 'toId',
 		'metadata_value' => $user->guid,
 		'owner_guid' => $user->guid,
-        'offset' => (int) max(get_input('offset', 0), 0),
-        'limit' => (int) max(get_input('limit', 10), 0),
+        'offset' => $offset,
+        'limit' => $limit,
 		'full_view' => false,
     );
 	
@@ -153,10 +153,10 @@ function messages_sent($limit = 10, $offset = 0) {
 		'metadata_name' => 'fromId',
 		'metadata_value' => $user->guid,
 		'owner_guid' => $user->guid,
-        'offset' => (int) max(get_input('offset', 0), 0),
-        'limit' => (int) max(get_input('limit', 10), 0),
+        'offset' => $offset,
+        'limit' => $limit,
 		'full_view' => false,
-						);
+	);
 	
 	
 	$list = elgg_get_entities_from_metadata($params);
@@ -244,4 +244,73 @@ elgg_ws_expose_function('message.send',
 				'POST',
 				true,
 				true);
- 
+
+
+/**
+ * @param $guid
+ * @return mixed
+ */
+function messages_delete($guid) {
+
+	$message = get_entity($guid);
+
+	if (!elgg_instanceof($message, 'object', 'messages') || !$message->canEdit()) {
+		$return['deleted'] = 0;
+		$return['message'] = elgg_echo('messages:error:delete:single');
+	}
+
+	if (!$message->delete()) {
+		$return['deleted'] = 0;
+		$return['message'] = elgg_echo('messages:error:delete:single');
+	} else {
+		$return['deleted'] = 1;
+		$return['message'] = elgg_echo('messages:success:delete:single');
+	}
+
+	return $return;
+}
+
+elgg_ws_expose_function('messages.delete',
+	"messages_delete",
+	array(
+		'guid' => array ('type' => 'int', 'required' => true),
+	),
+	"Delete a message",
+	'POST',
+	true,
+	true);
+
+/**
+ * @param $guid
+ * @return mixed
+ */
+function messages_mark_as_unread($guid) {
+	$message = get_entity($guid);
+
+	if (!elgg_instanceof($message, 'object', 'messages') || !$message->canEdit()) {
+		$return['deleted'] = 0;
+		$return['message'] = elgg_echo('messages:error:delete:single');
+	}
+
+    $read = $message->readYet;
+    if ($read) {
+        $message->readYet = 0;
+    }
+	if (!$message->readYet) {
+		$return['unread'] = 1;
+	} else {
+		$return['unread'] = 0;
+	}
+
+	return $return;
+}
+
+elgg_ws_expose_function('messages.mark_as_unread',
+	"messages_mark_as_unread",
+	array(
+		'guid' => array ('type' => 'int', 'required' => true),
+	),
+	"Unread a message",
+	'POST',
+	true,
+	true);
