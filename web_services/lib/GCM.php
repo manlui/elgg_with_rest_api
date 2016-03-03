@@ -88,7 +88,7 @@ class GCM {
                 die('Curl failed: ' . curl_error($ch));
                 return false;
             } else {
-                return true;
+                return json_decode($result, true);
             }
 
             // Close connection
