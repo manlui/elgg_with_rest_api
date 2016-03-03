@@ -21,9 +21,9 @@ class DB_Connect {
         // selecting database
         //mysql_select_db($CONFIG->dbname);
         if (!$con) {
-            echo "Error: Unable to connect to MySQL." . PHP_EOL;
-            echo "Debugging errno: " . mysqli_connect_errno() . PHP_EOL;
-            echo "Debugging error: " . mysqli_connect_error() . PHP_EOL;
+            error_log("Error: Unable to connect to MySQL." . PHP_EOL);
+            error_log("Debugging errno: " . mysqli_connect_errno() . PHP_EOL);
+            error_log("Debugging error: " . mysqli_connect_error() . PHP_EOL);
             exit;
         }
   

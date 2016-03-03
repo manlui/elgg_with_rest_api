@@ -83,12 +83,12 @@ class GCM {
 
             // Execute post
             $result = curl_exec($ch);
-            echo $result;
+            error_log($result);
             if ($result === FALSE) {
                 die('Curl failed: ' . curl_error($ch));
                 return false;
             } else {
-                return json_decode($result, true);
+                return true;
             }
 
             // Close connection
@@ -101,9 +101,9 @@ class GCM {
         $db = new DB_Register_Functions();
         $result = $db->deleteRegId($regId);
         if ($result) {
-            echo "Success removed RegId";
+            error_log("Success removed RegId");
         } else {
-            echo "Fail to remove RedId";
+            error_log("Fail to remove RedId");
         }
     }
 
@@ -112,9 +112,9 @@ class GCM {
         $db = new DB_Register_Functions();
         $result = $db->updateNewRegId($old_regId, $new_regId);
         if ($result) {
-            echo "Success updated RegId";
+            error_log("Success updated RegId");
         } else {
-            echo "Fail to update RedId";
+            error_log("Fail to update RedId");
         }
     }
 }

@@ -101,9 +101,6 @@ function user_save_profile($username, $profile) {
 		} elseif ($owner->name != $name) {
 			$owner->name = $name;
 			return $owner->save();
-			if (!$owner->save()) {
-				return elgg_echo('user:name:fail');
-			}
 		}
 	}
 	
@@ -340,7 +337,14 @@ function user_get_friends($username, $limit = 10, $offset = 0) {
 	if (!$user) {
 		throw new InvalidParameterException(elgg_echo('registration:usernamenotvalid'));
 	}
-	$friends = get_user_friends($user->guid, '' , $limit, $offset);
+	$friends = elgg_get_entities_from_relationship(array(
+		'relationship' => 'friend',
+		'relationship_guid' => $user->guid,
+		'type' => 'user',
+		'subtype' => "",
+		'limit' => $limit,
+		'offset' => $offset
+	));
 	
 	if($friends){
 	foreach($friends as $single) {
@@ -348,6 +352,8 @@ function user_get_friends($username, $limit = 10, $offset = 0) {
 		$friend['username'] = $single->username;
 		$friend['name'] = $single->name;
 		$friend['avatar_url'] = get_entity_icon_url($single,'small');
+		$friend['friend'] = 'FRIEND';
+
 		$return[] = $friend;
 	}
 	} else {
@@ -356,6 +362,17 @@ function user_get_friends($username, $limit = 10, $offset = 0) {
 	}
 	return $return;
 }
+
+elgg_ws_expose_function('user.get_friends',
+	"user_get_friends",
+	array('username' => array ('type' => 'string', 'required' => false),
+		'limit' => array ('type' => 'int', 'required' => false),
+		'offset' => array ('type' => 'int', 'required' => false),
+	),
+	"Register user",
+	'GET',
+	true,
+	true);
 
 
 /**
@@ -483,22 +500,34 @@ function user_post_messageboard($text, $to, $from){
 }
 
 
-
 /**
  * Web service to get list members
  *
  * @param string $username - username
  *
+ * @param int $limit
+ * @param int $offset
  * @return array
+ * @throws InvalidParameterException
  */
 function user_list_members($username, $limit = 20, $offset = 0)
 {
+	if(!$username) {
+		$user = elgg_get_logged_in_user_entity();
+	} else {
+		$user = get_user_by_username($username);
+		if (!$user) {
+			throw new InvalidParameterException('registration:usernamenotvalid');
+		}
+	}
+
     $options = array(
         'type' => 'user',
-        'full_view' => false
+        'full_view' => false,
+		'offset' => $offset,
+		'limit' => $limit,
     );
 
-    $user = get_user_by_username($username);
     if ($user) {
         $results = get_elgg_list_members($options);
         if ($results) {
@@ -528,6 +557,17 @@ function user_list_members($username, $limit = 20, $offset = 0)
 
     return $return;
 }
+
+elgg_ws_expose_function('user.list_members',
+	"user_list_members",
+	array('username' => array ('type' => 'string', 'required' => true),
+		'limit' => array ('type' => 'int', 'required' => false),
+		'offset' => array ('type' => 'int', 'required' => false),
+	),
+	"list members",
+	'GET',
+	true,
+	true);
 
 
 
@@ -621,8 +661,8 @@ elgg_ws_expose_function('user.get_profile_fields',
 	array(),
 	"Get user profile labels",
 	'GET',
-	false,
-	false);
+	true,
+	true);
 
 elgg_ws_expose_function('user.get_profile',
 	"user_get_profile",
@@ -649,8 +689,8 @@ elgg_ws_expose_function('user.get_user_by_email',
 	),
 	"Get Username by email",
 	'GET',
-	false,
-	false);
+    true,
+    true);
 
 elgg_ws_expose_function('user.check_username_availability',
 	"user_check_username_availability",
@@ -658,8 +698,8 @@ elgg_ws_expose_function('user.check_username_availability',
 	),
 	"Get Username by email",
 	'GET',
-	false,
-	false);
+    true,
+    true);
 
 elgg_ws_expose_function('user.register',
 	"user_register",
@@ -670,8 +710,8 @@ elgg_ws_expose_function('user.register',
 	),
 	"Register user",
 	'GET',
-	false,
-	false);
+    true,
+    true);
 
 elgg_ws_expose_function('user.friend.add',
 	"user_friend_add",
@@ -682,7 +722,7 @@ elgg_ws_expose_function('user.friend.add',
 	"Add a user as friend",
 	'POST',
 	true,
-	false);
+    true);
 
 elgg_ws_expose_function('user.friend.is.friend.of',
 	"user_friend_is_friend_of",
@@ -693,7 +733,7 @@ elgg_ws_expose_function('user.friend.is.friend.of',
 	"Check a user is friend",
 	'POST',
 	true,
-	false);
+    true);
 
 elgg_ws_expose_function('user.friend.remove',
 	"user_friend_remove",
@@ -725,8 +765,8 @@ elgg_ws_expose_function('user.friend.get_friends_of',
 	),
 	"Register user",
 	'GET',
-	false,
-	false);
+    true,
+    true);
 
 elgg_ws_expose_function('user.get_messageboard',
 	"user_get_messageboard",
@@ -737,8 +777,8 @@ elgg_ws_expose_function('user.get_messageboard',
 	),
 	"Get a users messageboard",
 	'GET',
-	false,
-	false);
+    true,
+    true);
 
 elgg_ws_expose_function('user.post_messageboard',
 	"user_post_messageboard",
@@ -749,17 +789,6 @@ elgg_ws_expose_function('user.post_messageboard',
 	),
 	"Post a messageboard post",
 	'POST',
-	true,
-	true);
-
-elgg_ws_expose_function('user.list_members',
-	"user_list_members",
-	array('username' => array ('type' => 'string', 'required' => true),
-		'limit' => array ('type' => 'int', 'required' => false),
-		'offset' => array ('type' => 'int', 'required' => false),
-	),
-	"list members",
-	'GET',
 	true,
 	true);
 

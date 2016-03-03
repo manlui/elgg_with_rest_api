@@ -222,11 +222,9 @@ function message_send($subject,$body, $send_to, $reply = 0) {
 	$result = messages_send($subject, $body, $recipient_guid, 0, $reply);
 
 	if ($result) {
-		$response['status'] = 0;
-		$response['result'] = $result;
+		$response['guid'] = $result;
 	} else {
-		$response['status'] = 1;
-		$response['result'] = 'problem send message';
+		$response['guid'] = 0;
 	}
 		
 	return $response;

@@ -22,7 +22,9 @@ function ws_init() {
 	elgg_register_library('elgg:ws:site', "$lib_dir/site.php");
 	elgg_register_library('elgg:ws:auth', "$lib_dir/auth.php");
 	elgg_register_library('elgg:ws:blog', "$lib_dir/blog.php");
+	elgg_register_library('elgg:ws:album', "$lib_dir/album.php");
 	elgg_register_library('elgg:ws:bookmark', "$lib_dir/bookmark.php");
+	elgg_register_library('elgg:ws:group', "$lib_dir/group.php");
 
 	elgg_load_library('elgg:ws:api_user');
 	elgg_load_library('elgg:ws:tokens');
@@ -37,7 +39,9 @@ function ws_init() {
 	elgg_load_library('elgg:ws:site');
 	elgg_load_library('elgg:ws:auth');
 	elgg_load_library('elgg:ws:blog');
+	elgg_load_library('elgg:ws:album');
 	elgg_load_library('elgg:ws:bookmark');
+	elgg_load_library('elgg:ws:group');
 
 	elgg_register_page_handler('services', 'ws_page_handler');
 
@@ -79,19 +83,21 @@ function ws_init() {
  * @access private
  */
 function mobile_notifications_send($hook, $type, $result, $params) {
-    
+
 	// Sender and Recipient Information to get name and username
 	$message = $params['notification'];
-    $sender = $message->getSender();
+	$sender = $message->getSender();
 	$recipient = $message->getRecipient();
-	
+
 	//Send GCN to Mobile
 	include_once elgg_get_plugins_path().'web_services/lib/GCM.php';
 	$gcm = new GCM();
 	$result = $gcm->setup_message($sender->name, $sender->username, $recipient->name, $recipient->username, $message->subject, $message->body);
-	if (!$result){
-	error_log('Failed to send message');
-	}	
+	if ($result) {
+		error_log("Message sent successfully");
+	} else {
+		error_log("Failed to send message");
+	}
 }
 
 /**
