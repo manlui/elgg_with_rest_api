@@ -25,6 +25,7 @@ function ws_init() {
 	elgg_register_library('elgg:ws:album', "$lib_dir/album.php");
 	elgg_register_library('elgg:ws:bookmark', "$lib_dir/bookmark.php");
 	elgg_register_library('elgg:ws:group', "$lib_dir/group.php");
+	elgg_register_library('elgg:ws:activity', "$lib_dir/activity.php");
 
 	elgg_load_library('elgg:ws:api_user');
 	elgg_load_library('elgg:ws:tokens');
@@ -42,6 +43,7 @@ function ws_init() {
 	elgg_load_library('elgg:ws:album');
 	elgg_load_library('elgg:ws:bookmark');
 	elgg_load_library('elgg:ws:group');
+	elgg_load_library('elgg:ws:activity');
 
 	elgg_register_page_handler('services', 'ws_page_handler');
 

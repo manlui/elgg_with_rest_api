@@ -41,7 +41,7 @@ elgg_ws_expose_function('messages.read',
 				array(
 					  'guid' => array ('type' => 'int', 'required' => true),
 					),
-				"Read a sigle message",
+				"Read a single message",
 				'GET',
 				true,
 				true);
@@ -286,7 +286,7 @@ function messages_mark_as_unread($guid) {
 	$message = get_entity($guid);
 
 	if (!elgg_instanceof($message, 'object', 'messages') || !$message->canEdit()) {
-		$return['deleted'] = 0;
+		$return['unread'] = -1;
 		$return['message'] = elgg_echo('messages:error:delete:single');
 	}
 
@@ -312,3 +312,129 @@ elgg_ws_expose_function('messages.mark_as_unread',
 	'POST',
 	true,
 	true);
+
+/**
+ * Web service to read a message
+ *
+ * @param $guidString
+ * @return array $message Array of message content
+ * @internal param int $guid
+ *
+ */
+function messages_mark_all_as_read($guidString)
+{
+
+    $guidArray = string_to_tag_array($guidString);
+
+    foreach ($guidArray as $guid) {
+
+        $single = get_entity($guid);
+
+        if (!elgg_instanceof($single, 'object', 'messages') || !$single->canEdit()) {
+            $message['guid'] = $guid;
+            $message['message'] = 'fail';
+        } else {
+            $single->readYet = 1;
+
+            $message['guid'] = $guid;
+            $message['message'] = 'success';
+        }
+
+        $return[] = $message;
+    }
+
+	return $return;
+}
+
+elgg_ws_expose_function('messages.mark_all_as_read',
+	"messages_mark_all_as_read",
+	array(
+		'guidString' => array ('type' => 'string', 'required' => true),
+	),
+	"Mark all select messages as read",
+	'POST',
+	true,
+	true);
+
+
+/**
+ * Web service to read a message
+ *
+ * @param $guidString
+ * @return array $message Array of message content
+ * @internal param int $guid
+ *
+ */
+function messages_mark_all_as_unread($guidString)
+{
+
+    $guidArray = string_to_tag_array($guidString);
+
+    foreach ($guidArray as $guid) {
+
+        $single = get_entity($guid);
+
+        if (!elgg_instanceof($single, 'object', 'messages') || !$single->canEdit()) {
+            $message['guid'] = $guid;
+            $message['message'] = 'fail';
+        } else {
+            $single->readYet = 0;
+
+            $message['guid'] = $guid;
+            $message['message'] = 'success';
+        }
+
+        $return[] = $message;
+    }
+
+    return $return;
+}
+
+elgg_ws_expose_function('messages.mark_all_as_unread',
+    "messages_mark_all_as_unread",
+    array(
+        'guidString' => array ('type' => 'string', 'required' => true),
+    ),
+    "Mark all select messages as unread",
+    'POST',
+    true,
+    true);
+
+
+function messages_multiple_delete($guidString)
+{
+
+    $guidArray = string_to_tag_array($guidString);
+
+    foreach ($guidArray as $guid) {
+
+        $single = get_entity($guid);
+
+        if (!elgg_instanceof($single, 'object', 'messages') || !$single->canEdit()) {
+            $message['guid'] = $guid;
+            $message['message'] = 'fail';
+        } else {
+            if (!$single->delete()) {
+                $message['guid'] = $guid;
+                $message['message'] = 'success';
+            } else {
+                $message['guid'] = $guid;
+                $message['message'] = 'fail';
+            }
+        }
+
+        $return[] = $message;
+    }
+
+    return $return;
+}
+
+elgg_ws_expose_function('messages.multiple_delete',
+    "messages_multiple_delete",
+    array(
+        'guidString' => array ('type' => 'string', 'required' => true),
+    ),
+    "Multiple messages delete",
+    'POST',
+    true,
+    true);
