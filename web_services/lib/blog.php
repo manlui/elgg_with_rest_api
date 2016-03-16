@@ -11,7 +11,7 @@
  * @return array $file Array of files uploaded
  * @throws InvalidParameterException
  */
-function blog_get_posts($context,  $limit = 10, $offset = 0,$group_guid, $username) {
+function blog_get_posts($context, $username, $limit = 10, $offset = 0,$group_guid=0) {
     if(!$username) {
         $user = elgg_get_logged_in_user_entity();
     } else {
@@ -29,8 +29,8 @@ function blog_get_posts($context,  $limit = 10, $offset = 0,$group_guid, $userna
             'offset' => $offset,
             'full_view' => FALSE,
         );
-    }
-    if($context == "mine" || $context ==  "user"){
+        $latest_blogs = elgg_get_entities($params);
+    } else if($context == "mine" || $context ==  "user"){
         $params = array(
             'types' => 'object',
             'subtypes' => 'blog',
@@ -39,8 +39,8 @@ function blog_get_posts($context,  $limit = 10, $offset = 0,$group_guid, $userna
             'offset' => $offset,
             'full_view' => FALSE,
         );
-    }
-    if($context == "group"){
+        $latest_blogs = elgg_get_entities($params);
+    } else if($context == "group"){
         $params = array(
             'types' => 'object',
             'subtypes' => 'blog',
@@ -49,19 +49,23 @@ function blog_get_posts($context,  $limit = 10, $offset = 0,$group_guid, $userna
             'offset' => $offset,
             'full_view' => FALSE,
         );
+        $latest_blogs = elgg_get_entities($params);
     }
-    $latest_blogs = elgg_get_entities($params);
+
 
     if($context == "friends"){
-        $latest_blogs = elgg_get_entities_from_relationship(array(
+        $options = array(
             'type' => 'object',
             'subtype' => 'blog',
-            'limit' => $limit,
-            'offset' => $offset,
+            'full_view' => false,
             'relationship' => 'friend',
             'relationship_guid' => $user->guid,
             'relationship_join_on' => 'container_guid',
-        ));
+            'limit' => $limit,
+            'offset' => $offset,
+        );
+        $latest_blogs = elgg_get_entities_from_relationship($options);
+
     }
 
 
@@ -121,11 +125,11 @@ function blog_get_posts($context,  $limit = 10, $offset = 0,$group_guid, $userna
 elgg_ws_expose_function('blog.get_posts',
     "blog_get_posts",
     array(
-        'context' => array ('type' => 'string', 'required' => false, 'default' => 'all'),
+        'context' => array ('type' => 'string', 'required' => true, 'default' => 'all'),
+        'username' => array ('type' => 'string', 'required' => true),
         'limit' => array ('type' => 'int', 'required' => false, 'default' => 20),
         'offset' => array ('type' => 'int', 'required' => false, 'default' => 0),
         'group_guid' => array ('type'=> 'int', 'required'=>false, 'default' =>0),
-        'username' => array ('type' => 'string', 'required' => false),
     ),
     "Get list of blog posts",
     'GET',

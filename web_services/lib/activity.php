@@ -20,6 +20,7 @@ function site_river_mine($username, $limit=20, $offset=0) {
     }
 
     $options = array(
+        'distinct' => false,
         'subject_guids' => $user->guid,
         'offset' => $offset,
         'limit' => $limit,
@@ -61,6 +62,7 @@ function site_river_friends($username, $limit=20, $offset=0) {
     }
 
     $options = array(
+        'distinct' => false,
         'relationship' => 'friend',
         'relationship_guid' => $user->guid,
         'offset' => $offset,

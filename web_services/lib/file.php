@@ -78,7 +78,7 @@ elgg_ws_expose_function('file.post_comment',
  * @return array
  * @throws InvalidParameterException
  */
-function file_get_files($context, $limit = 20, $offset = 0, $group_guid, $username) {
+function file_get_files($context, $username, $limit = 20, $offset = 0, $group_guid=0) {
 	if(!$username) {
 		$user = elgg_get_logged_in_user_entity();
 	} else {
@@ -96,8 +96,8 @@ function file_get_files($context, $limit = 20, $offset = 0, $group_guid, $userna
             'offset' => $offset,
 			'full_view' => FALSE,
 		);
-	}
-	if($context == "mine" || $context == "user"){
+		$latest_file = elgg_get_entities($params);
+	} else if($context == "mine" || $context == "user"){
 		$params = array(
 			'types' => 'object',
 			'subtypes' => 'file',
@@ -106,8 +106,8 @@ function file_get_files($context, $limit = 20, $offset = 0, $group_guid, $userna
             'offset' => $offset,
 			'full_view' => FALSE,
 		);
-	}
-	if($context == "group"){
+		$latest_file = elgg_get_entities($params);
+	} else if($context == "group"){
 		$params = array(
 			'types' => 'object',
 			'subtypes' => 'file',
@@ -116,8 +116,9 @@ function file_get_files($context, $limit = 20, $offset = 0, $group_guid, $userna
             'offset' => $offset,
 			'full_view' => FALSE,
 		);
+		$latest_file = elgg_get_entities($params);
 	}
-	$latest_file = elgg_get_entities($params);
+
 
 	if($context == "friends"){
 		$latest_file = elgg_get_entities_from_relationship(array(
@@ -200,10 +201,10 @@ elgg_ws_expose_function('file.get_files',
 	"file_get_files",
 	array(
 		'context' => array ('type' => 'string', 'required' => true, 'default' => 'all'),
+		'username' => array ('type' => 'string', 'required' => true),
 		'limit' => array ('type' => 'int', 'required' => false, 'default' => 0),
 		'offset' => array ('type' => 'int', 'required' => false, 'default' => 0),
 		'group_guid' => array ('type'=> 'int', 'required'=>false, 'default' =>0),
-		'username' => array ('type' => 'string', 'required' => true),
 	),
 	"Get file uploaded by all users",
 	'GET',

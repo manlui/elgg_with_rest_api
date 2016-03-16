@@ -103,6 +103,7 @@ function bookmark_get_posts($context,  $limit = 20, $offset = 0, $username) {
                 } else {
                     $bookmark['description'] = strip_tags($single->description);
                 }
+                $bookmark['image_link'] = getImageLink($single->description);
             } else {
                 $bookmark['description'] = '';
             }
@@ -456,4 +457,18 @@ function getOwner($guid) {
     $owner['avatar_url'] = elgg_format_url($entity->getIconURL());
 
     return $owner;
+}
+
+function getImageLink($description) {
+    $doc = new DOMDocument();
+    @$doc->loadHTML($description);
+
+    $tags = $doc->getElementsByTagName('img');
+
+    $image_link = '';
+    foreach ($tags as $tag) {
+        $image_link =  $tag->getAttribute('src');
+    }
+
+    return $image_link;
 }

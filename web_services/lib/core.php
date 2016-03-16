@@ -28,11 +28,14 @@ function site_river_short($username, $limit=20, $offset=0) {
     }
 
     $options = array(
+        'distinct' => false,
         'offset' => $offset,
         'limit' => $limit,
     );
 
     $activities = elgg_get_river($options);
+    //$test2 = elgg_list_river($options);
+    //error_log($test2);
 
     $login_user = $user;
     $handle = getRiverActivity($activities, $user, $login_user);
@@ -563,6 +566,7 @@ function getRiverActivity($activities, $user, $login_user) {
             }
 
             if ($entity->description != null) {
+                $icon_url = getImageLink($entity->description);
                 if (strlen($entity->description) > 300) {
                     $entityString = substr(strip_tags($entity->description), 0, 300);
                     $entityString = preg_replace('/\W\w+\s*(\W*)$/', '$1', $entityString) . '...';
