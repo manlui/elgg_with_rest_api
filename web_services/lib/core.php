@@ -6,6 +6,7 @@ elgg_ws_expose_function('site.river_short',
         'username' => array ('type' => 'string', 'required' =>true),
         'limit' => array ('type' => 'int', 'required' => false),
         'offset' => array ('type' => 'int', 'required' => false),
+        'from_guid' => array ('type' => 'int', 'required' => false, 'default' => 0),
     ),
     "Read latest news feed",
     'GET',
@@ -16,10 +17,11 @@ elgg_ws_expose_function('site.river_short',
  * @param $username
  * @param int $limit
  * @param int $offset
+ * @param $from_guid
  * @return array
  * @throws InvalidParameterException
  */
-function site_river_short($username, $limit=20, $offset=0) {
+function site_river_short($username, $limit=20, $offset=0, $from_guid) {
     global $jsonexport;
 
     $user = get_user_by_username($username);
@@ -27,6 +29,9 @@ function site_river_short($username, $limit=20, $offset=0) {
         throw new InvalidParameterException('registration:usernamenotvalid');
     }
 
+    if ($from_guid > 0) {
+        $offset = $offset + getRiverGuidPosition($from_guid);
+    }
     $options = array(
         'distinct' => false,
         'offset' => $offset,
@@ -755,4 +760,29 @@ function getBatchImages($id, $user_guid) {
     }
 
     return $return;
+}
+
+function getRiverGuidPosition($guid) {
+    $notFound = true;
+    $offset = 0;
+    while($notFound) {
+        $options = array(
+            'distinct' => false,
+            'offset' => $offset,
+            'limit' => 1,
+        );
+        $activity = elgg_get_river($options);
+
+        if (sizeof($activity) > 0) {
+            if ($activity[0]->object_guid == $guid) {
+                $notFound = false;
+            } else {
+                $offset = $offset + 1;
+            }
+        } else {
+            $notFound = false;
+        }
+    }
+
+    return $offset;
 }

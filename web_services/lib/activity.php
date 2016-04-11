@@ -6,7 +6,7 @@
  * Time: 10:10 AM
  */
 
-function site_river_mine($username, $limit=20, $offset=0) {
+function site_river_mine($username, $limit=20, $offset=0, $from_guid) {
     global $jsonexport;
 
     if(!$username) {
@@ -17,6 +17,10 @@ function site_river_mine($username, $limit=20, $offset=0) {
         if (!$user) {
             throw new InvalidParameterException('registration:usernamenotvalid');
         }
+    }
+
+    if ($from_guid > 0) {
+        $offset = $offset + getActivityGuidPosition($from_guid, "mine", $user);
     }
 
     $options = array(
@@ -42,13 +46,14 @@ elgg_ws_expose_function('site.river_mine',
         'username' => array ('type' => 'string', 'required' =>true),
         'limit' => array ('type' => 'int', 'required' => false),
         'offset' => array ('type' => 'int', 'required' => false),
+        'from_guid' => array ('type' => 'int', 'required' => false, 'default' => 0),
     ),
     "Read mine latest news feed",
     'GET',
     true,
     true);
 
-function site_river_friends($username, $limit=20, $offset=0) {
+function site_river_friends($username, $limit=20, $offset=0, $from_guid) {
     global $jsonexport;
 
     if(!$username) {
@@ -59,6 +64,10 @@ function site_river_friends($username, $limit=20, $offset=0) {
         if (!$user) {
             throw new InvalidParameterException('registration:usernamenotvalid');
         }
+    }
+
+    if ($from_guid > 0) {
+        $offset = $offset + getActivityGuidPosition($from_guid, "friends", $user);
     }
 
     $options = array(
@@ -85,8 +94,47 @@ elgg_ws_expose_function('site.river_friends',
         'username' => array ('type' => 'string', 'required' =>true),
         'limit' => array ('type' => 'int', 'required' => false),
         'offset' => array ('type' => 'int', 'required' => false),
+        'from_guid' => array ('type' => 'int', 'required' => false, 'default' => 0),
     ),
-    "Read mine latest news feed",
+    "Read friends latest news feed",
     'GET',
     true,
     true);
+
+function getActivityGuidPosition($guid, $context, $loginUser) {
+    $notFound = true;
+    $offset = 0;
+    while($notFound) {
+        if ($context == 'mine') {
+            $options = array(
+                'distinct' => false,
+                'subject_guids' => $loginUser->guid,
+                'offset' => $offset,
+                'limit' => 1,
+            );
+            $activity = elgg_get_river($options);
+        } else if ($context == 'friends') {
+            $options = array(
+                'distinct' => false,
+                'relationship' => 'friend',
+                'relationship_guid' => $loginUser->guid,
+                'offset' => $offset,
+                'limit' => 1,
+            );
+
+            $activity = elgg_get_river($options);
+        }
+
+        if (sizeof($activity) > 0) {
+            if ($activity[0]->object_guid == $guid) {
+                $notFound = false;
+            } else {
+                $offset = $offset + 1;
+            }
+        } else {
+            $notFound = false;
+        }
+    }
+
+    return $offset;
+}

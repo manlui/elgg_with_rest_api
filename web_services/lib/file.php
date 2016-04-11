@@ -267,9 +267,8 @@ function file_get_post($guid, $size, $username) {
 
 				// caching images for 10 days
 				header("Content-type: $mime");
-				header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', strtotime("+10 days")), true);
-				header("Pragma: public", true);
-				header("Cache-Control: public", true);
+				
+				
 				header("Content-Length: " . strlen($contents));
 
 				echo $contents;

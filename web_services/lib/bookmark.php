@@ -14,7 +14,7 @@
  * @throws InvalidParameterException
  */
 
-function bookmark_get_posts($context,  $limit = 20, $offset = 0, $username) {
+function bookmark_get_posts($context,  $limit = 20, $offset = 0, $username, $from_guid) {
 
     if(!$username) {
         $user = elgg_get_logged_in_user_entity();
@@ -27,6 +27,10 @@ function bookmark_get_posts($context,  $limit = 20, $offset = 0, $username) {
     }
 
     $loginUser = elgg_get_logged_in_user_entity();
+
+    if ($from_guid > 0) {
+        $offset = $offset + getBookmarkGuidPosition($from_guid, $context, $loginUser);
+    }
 
     if($context == "all"){
         $params = array(
@@ -138,6 +142,7 @@ elgg_ws_expose_function('bookmark.get_posts',
         'limit' => array ('type' => 'int', 'required' => false, 'default' => 20),
         'offset' => array ('type' => 'int', 'required' => false, 'default' => 0),
         'username' => array ('type' => 'string', 'required' => false),
+        'from_guid' => array ('type' => 'int', 'required' => false, 'default' => 0),
     ),
     "GET all the bookmarks",
     'GET',
@@ -471,4 +476,64 @@ function getImageLink($description) {
     }
 
     return $image_link;
+}
+
+function getBookmarkGuidPosition($guid, $context, $loginUser) {
+    $notFound = true;
+    $offset = 0;
+    while($notFound) {
+        if($context == "all"){
+            $params = array(
+                'type' => 'object',
+                'subtype' => 'bookmarks',
+                'full_view' => false,
+                'view_toggle_type' => false,
+                'no_results' => elgg_echo('bookmarks:none'),
+                'preload_owners' => true,
+                'distinct' => false,
+                'limit' => 1,
+                'offset' => $offset,
+            );
+            $bookmarks = elgg_get_entities($params);
+        } else if ($context == 'mine') {
+            $params = array(
+                'type' => 'object',
+                'subtype' => 'bookmarks',
+                'container_guid' => $loginUser->guid,
+                'full_view' => false,
+                'view_toggle_type' => false,
+                'no_results' => elgg_echo('bookmarks:none'),
+                'preload_owners' => true,
+                'distinct' => false,
+                'limit' => 1,
+                'offset' => $offset,
+            );
+            $bookmarks = elgg_get_entities($params);
+        } else if ($context == 'friends') {
+            $bookmarks = elgg_get_entities_from_relationship(array(
+                'type' => 'object',
+                'subtype' => 'bookmarks',
+                'full_view' => false,
+                'relationship' => 'friend',
+                'relationship_guid' => $loginUser->guid,
+                'relationship_join_on' => 'container_guid',
+                'no_results' => elgg_echo('bookmarks:none'),
+                'preload_owners' => true,
+                'limit' => 1,
+                'offset' => $offset,
+            ));
+        }
+
+        if (sizeof($bookmarks) > 0) {
+            if ($bookmarks[0]->guid == $guid) {
+                $notFound = false;
+            } else {
+                $offset = $offset + 1;
+            }
+        } else {
+            $notFound = false;
+        }
+    }
+
+    return $offset;
 }
