@@ -34,3 +34,33 @@ function site_getinfo() {
 
     return $siteinfo;
 }
+
+
+function site_get_list_plugin() {
+    $plugins = elgg_get_plugins($status = 'active', $site_guid = null);
+    $return = array(
+        'messages' => false,
+        'thewire' => false,
+        'blog' => false,
+        'tidypics' => false,
+        'file' => false,
+        'bookmarks' => false,
+        'groups' => false,
+    );
+    foreach ($plugins as $plugin) {
+        $a = $plugin->title;
+        if (array_key_exists($plugin->title, $return)) {
+            $return[$plugin->title] = true;
+        }
+    }
+
+    return $return;
+}
+
+elgg_ws_expose_function('site.get_list_plugin',
+    "site_get_list_plugin",
+    array(),
+    "Get list site Plugin",
+    'GET',
+    false,
+    false);
