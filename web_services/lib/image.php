@@ -221,11 +221,11 @@ function wire_get_image_comments($guid, $username, $limit = 20, $offset = 0){
             $response['owner']['guid'] = $owner->guid;
             $response['owner']['name'] = $owner->name;
             $response['owner']['username'] = $owner->username;
-            $response['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $response['owner']['avatar_url'] = getProfileIcon($owner,'small');
 
             $response['time_created'] = time_ago($comment->time_created);
-            $comment['like_count'] = likes_count_number_of_likes($comment->guid);
-            $comment['like'] = checkLike($comment->guid, $user->guid);
+            $response['like_count'] = likes_count_number_of_likes($comment->guid);
+            $response['like'] = checkLike($comment->guid, $user->guid);
 
             $return[] = $response;
         }
