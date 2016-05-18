@@ -8,14 +8,14 @@
 /**
  * Send a raw API call to an elgg api endpoint.
  *
- * @param array $keys The api keys.
- * @param string $url URL of the endpoint.
- * @param array $call Associated array of "variable" => "value"
- * @param string $method GET or POST
- * @param string $post_data The post data
+ * @param array  $keys         The api keys.
+ * @param string $url          URL of the endpoint.
+ * @param array  $call         Associated array of "variable" => "value"
+ * @param string $method       GET or POST
+ * @param string $post_data    The post data
  * @param string $content_type The content type
+ *
  * @return string
- * @throws NotImplementedException
  */
 function send_api_call(array $keys, $url, array $call, $method = 'GET', $post_data = '',
 $content_type = 'application/octet-stream') {

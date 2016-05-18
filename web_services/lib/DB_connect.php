@@ -1,17 +1,7 @@
 <?php
   
 class DB_Connect {
-  
-    // constructor
-    function __construct() {
-  
-    }
-  
-    // destructor
-    function __destruct() {
-        // $this->close();
-    }
-  
+
     // Connecting to database
     public function connect() {
         global $CONFIG;
@@ -19,7 +9,6 @@ class DB_Connect {
         // connecting to mysql
         $con = mysqli_connect($CONFIG->dbhost, $CONFIG->dbuser, $CONFIG->dbpass, $CONFIG->dbname);
         // selecting database
-        //mysql_select_db($CONFIG->dbname);
         if (!$con) {
             error_log("Error: Unable to connect to MySQL." . PHP_EOL);
             error_log("Debugging errno: " . mysqli_connect_errno() . PHP_EOL);
@@ -30,11 +19,5 @@ class DB_Connect {
         // return database handler
         return $con;
     }
-  
-    // Closing database connection
-    public function close() {
-        mysql_close();
-    }
-  
 } 
 

@@ -127,7 +127,7 @@ function album_get_posts($context,  $limit = 20, $offset = 0, $username) {
             $album['owner']['guid'] = $owner->guid;
             $album['owner']['name'] = $owner->name;
             $album['owner']['username'] = $owner->username;
-            $album['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $album['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
 
 //            $photo['img_url'] = $img_url;

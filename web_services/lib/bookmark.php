@@ -253,7 +253,7 @@ function bookmark_get_comments($guid, $username, $limit = 20, $offset = 0){
             $comment['owner']['guid'] = $owner->guid;
             $comment['owner']['name'] = $owner->name;
             $comment['owner']['username'] = $owner->username;
-            $comment['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $comment['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
             $comment['time_created'] = time_ago($single->time_created);
             $comment['like_count'] = likes_count_number_of_likes($single->guid);
@@ -459,7 +459,7 @@ function getOwner($guid) {
     $owner['guid'] = $guid;
     $owner['name'] = $entity->name;
     $owner['username'] = $entity->username;
-    $owner['avatar_url'] = elgg_format_url($entity->getIconURL());
+    $owner['avatar_url'] = getProfileIcon($entity); //$entity->getIconURL('small');;
 
     return $owner;
 }

@@ -108,7 +108,7 @@ function group_get_list($context,  $limit = 20, $offset = 0, $username, $from_gu
             $group['permission_public'] = $single->isPublicMembership();
             $group['content_access_mode'] = $single->getContentAccessMode();
 
-            $icon = $single->getIconURL('medium');
+            $icon = getProfileIcon($single, 'medium'); //$single->getIconURL('medium');
             if (strpos($icon, 'graphics/defaultmedium.gif') !== FALSE) {
                 $group['icon'] = $icon;
             } else {

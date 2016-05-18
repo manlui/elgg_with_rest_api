@@ -22,7 +22,6 @@ elgg_ws_expose_function('site.river_short',
  * @throws InvalidParameterException
  */
 function site_river_short($username, $limit=20, $offset=0, $from_guid) {
-    global $jsonexport;
 
     $user = get_user_by_username($username);
     if (!$user) {
@@ -45,9 +44,7 @@ function site_river_short($username, $limit=20, $offset=0, $from_guid) {
     $login_user = $user;
     $handle = getRiverActivity($activities, $user, $login_user);
 
-    $jsonexport['activity'] = $handle;
-
-    return $jsonexport['activity'];
+    return $handle;
 }
 
 elgg_ws_expose_function('post.get_comments',
@@ -100,7 +97,7 @@ function post_get_comments($guid, $username, $limit = 20, $offset = 0){
             $comment['owner']['guid'] = $owner->guid;
             $comment['owner']['name'] = $owner->name;
             $comment['owner']['username'] = $owner->username;
-            $comment['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $comment['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
             $comment['time_created'] = time_ago($single->time_created);
             $comment['like_count'] = likes_count_number_of_likes($single->guid);
@@ -194,8 +191,6 @@ elgg_ws_expose_function('user.river_short',
  * @throws InvalidParameterException
  */
 function user_river_short($username, $limit=20, $offset=0) {
-    global $jsonexport;
-
     $login_user = elgg_get_logged_in_user_entity();
     $user = get_user_by_username($username);
     if (!$login_user || !$user) {
@@ -211,8 +206,7 @@ function user_river_short($username, $limit=20, $offset=0) {
     $activities = elgg_get_river($options);
     $handle = getRiverActivity($activities, $user, $login_user);
 
-    $jsonexport['activity'] = $handle;
-    return $jsonexport['activity'];
+    return $handle;
 }
 
 elgg_ws_expose_function('count.like_comment',
@@ -320,8 +314,8 @@ function createProfileImageBatch($guid, $timePost, $userEntity) {
     $image['title'] = $userEntity->name;
     $image['time_create'] = $timePost;
     $image['owner_guid'] = $userEntity->guid;
-    $image['icon_url'] = $userEntity->getIconURL('large');
-    $image['img_url'] = $userEntity->getIconURL('master');
+    $image['icon_url'] = getProfileIcon($userEntity, 'large'); //$userEntity->getIconURL('large');
+    $image['img_url'] = getProfileIcon($userEntity, 'master'); //$userEntity->getIconURL('master');
     $image['like_count'] = likes_count_number_of_likes($guid);
     $image['comment_count'] = api_get_image_comment_count($guid);
     $image['like'] = checkLike($guid, $userEntity->guid);
@@ -351,7 +345,7 @@ function getRiverActivity($activities, $user, $login_user) {
     foreach($activities AS $activity){
         $userEntity = get_entity($activity->subject_guid);
 
-        $avatar_url = elgg_format_url($userEntity->getIconURL());
+        $avatar_url = getProfileIcon($userEntity);
 
         $object_guid = $activity->object_guid;
         $entity = get_entity($object_guid);
@@ -444,11 +438,11 @@ function getRiverActivity($activities, $user, $login_user) {
             $msg = "is now a friend with";
             $friendEntity = get_entity($activity->object_guid);
             $entityTxt = $msg . " " .$friendEntity->name;
-            $icon_url = $friendEntity->getIconURL();
+            $icon_url = getProfileIcon($friendEntity);
             $icon_url = elgg_format_url($icon_url);
-            $img_url = $friendEntity->getIconURL('master');
+            $img_url = getProfileIcon($friendEntity, 'master');//$friendEntity->getIconURL('master');
             if (strpos($img_url, 'user/defaultmaster.gif') !== false) {
-                $img_url = $friendEntity->getIconURL('large');
+                $img_url = getProfileIcon($friendEntity, 'large');//$friendEntity->getIconURL('large');
             }
             $img_url = elgg_format_url($img_url);
         } else if ($activity->action_type == "update" && $activity->view == 'river/user/default/profileiconupdate') {
@@ -494,7 +488,7 @@ function getRiverActivity($activities, $user, $login_user) {
                 $img_url = elgg_format_url($img_url);
             } else {
                 $activity->type = 'download';
-                $icon_url = elgg_format_url($entity->getIconURL('large'));
+                $icon_url = getProfileIcon($entity, 'large');//elgg_format_url($entity->getIconURL('large'));
                 $img_url = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $entity->guid . '&size=' . $entity->originalfilename;
                 $img_url = elgg_format_url($img_url);
             }

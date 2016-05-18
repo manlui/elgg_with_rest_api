@@ -6,7 +6,7 @@
  * @param $regId
  * @param $account
  * @param $name
- * @return
+ * @return mixed
  * @throws InvalidParameterException
  */
 
@@ -48,12 +48,12 @@ function gcm_register($regId, $account, $name) {
             $response['result'] = "success update gcm regId and user info";
         } else {
             $res = $db->storeUser($name, $account, $regId, $elgg_post, $elgg_message);
-            $registatoin_ids = array($regId);
+            $registration_ids = array($regId);
             $message = array("from_name" => "Core Server",
                 "subject" => "Core App Notification",
                 "message" => "Enable Receive Notification");
 
-            $result = $gcm->send_notification($registatoin_ids, $message);
+            $result = $gcm->send_notification($registration_ids, $message);
 
             $response['status'] = 0;
             $response['result'] = "success Insert gcm regId and user info";

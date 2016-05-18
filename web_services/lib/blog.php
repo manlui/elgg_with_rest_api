@@ -87,7 +87,7 @@ function blog_get_posts($context, $username, $limit = 10, $offset = 0,$group_gui
             $blog['owner']['guid'] = $owner->guid;
             $blog['owner']['name'] = $owner->name;
             $blog['owner']['username'] = $owner->username;
-            $blog['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $blog['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
             $blog['container_guid'] = $single->container_guid;
             $blog['access_id'] = $single->access_id;
@@ -408,7 +408,7 @@ function blog_get_comments($guid, $username, $limit = 20, $offset = 0){
             $comment['owner']['guid'] = $owner->guid;
             $comment['owner']['name'] = $owner->name;
             $comment['owner']['username'] = $owner->username;
-            $comment['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $comment['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
             $comment['time_created'] = time_ago($single->time_created);
             $comment['like_count'] = likes_count_number_of_likes($single->guid);
@@ -501,7 +501,7 @@ function getBlogOwner($guid) {
     $owner['guid'] = $guid;
     $owner['name'] = $entity->name;
     $owner['username'] = $entity->username;
-    $owner['avatar_url'] = elgg_format_url($entity->getIconURL());
+    $owner['avatar_url'] = getProfileIcon($entity); //$entity->getIconURL('small');
 
     return $owner;
 }

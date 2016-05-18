@@ -221,11 +221,11 @@ function wire_get_image_comments($guid, $username, $limit = 20, $offset = 0){
             $response['owner']['guid'] = $owner->guid;
             $response['owner']['name'] = $owner->name;
             $response['owner']['username'] = $owner->username;
-            $response['owner']['avatar_url'] = getProfileIcon($owner,'small');
+            $response['owner']['avatar_url'] = getProfileIcon($owner); // $owner->getIconURL('small');
 
             $response['time_created'] = time_ago($comment->time_created);
-            $response['like_count'] = likes_count_number_of_likes($comment->guid);
-            $response['like'] = checkLike($comment->guid, $user->guid);
+            $comment['like_count'] = likes_count_number_of_likes($comment->guid);
+            $comment['like'] = checkLike($comment->guid, $user->guid);
 
             $return[] = $response;
         }
@@ -430,7 +430,7 @@ function image_get_photos($context,  $limit = 20, $offset = 0, $username) {
             $photo['owner']['guid'] = $owner->guid;
             $photo['owner']['name'] = $owner->name;
             $photo['owner']['username'] = $owner->username;
-            $photo['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $photo['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
             $photo['icon_url'] =$icon_url;
             $photo['img_url'] = $img_url;

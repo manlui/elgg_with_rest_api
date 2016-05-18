@@ -54,7 +54,7 @@ function user_get_profile($username) {
 	
 	$profile_info['core'] = $core;
 	$profile_info['profile_fields'] = $profile_fields;
-	$profile_info['avatar_url'] = get_entity_icon_url($user,'medium');
+	$profile_info['avatar_url'] = getProfileIcon($user);
 	return $profile_info;
 }
 
@@ -351,7 +351,7 @@ function user_get_friends($username, $limit = 10, $offset = 0) {
 		$friend['guid'] = $single->guid;
 		$friend['username'] = $single->username;
 		$friend['name'] = $single->name;
-		$friend['avatar_url'] = get_entity_icon_url($single,'small');
+		$friend['avatar_url'] = getProfileIcon($single); //$single->getIconURL('small');
 		$friend['friend'] = 'FRIEND';
 
 		$return[] = $friend;
@@ -400,7 +400,7 @@ function user_get_friends_of($username, $limit = 10, $offset = 0) {
 		$return['guid'] = $friend->guid;
 		$return['username'] = $friend->username;
 		$return['name'] = $friend->name;
-		$return['avatar_url'] = get_entity_icon_url($friend,'small');
+		$return['avatar_url'] = getProfileIcon($friend); //$friend->getIconURL('small');
 		$success = true;
 	}
 	
@@ -450,7 +450,7 @@ $options = array(
 		$post['owner']['guid'] = $owner->guid;
 		$post['owner']['name'] = $owner->name;
 		$post['owner']['username'] = $owner->username;
-		$post['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+		$post['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 		
 		$post['time_created'] = (int)$single->time_created;
 		$return[] = $post;
@@ -539,7 +539,7 @@ function user_list_members($username, $limit = 20, $offset = 0)
                     $member['guid'] = $result->get("guid");
                     $member['name'] = $result->get("name");
                     $member['username'] = $result->get("username");
-                    $member['avatar_url'] = get_entity_icon_url($result,'small');
+                    $member['avatar_url'] = getProfileIcon($result); //$result->getIconURL('small');
 
                     if ($friend_user->isFriendOf($user->guid)) {
                         $member['friend'] = 'FRIEND';
@@ -636,7 +636,7 @@ function user_search($username, $limit = 20, $offset = 0, $search_name)
                     $member['guid'] = $result->get("guid");
                     $member['name'] = $result->get("name");
                     $member['username'] = $result->get("username");
-                    $member['avatar_url'] = $result->getIconURL();
+                    $member['avatar_url'] = getProfileIcon($result); //$result->getIconURL('small');
 
                     if ($friend_user->isFriendOf($user->guid)) {
                         $member['friend'] = 'FRIEND';
@@ -803,3 +803,21 @@ elgg_ws_expose_function('user.search',
 	'GET',
 	true,
 	true);
+
+function getProfileIcon($user, $size='small') {
+	$site_url = get_config('wwwroot');
+
+	$profileUrl = $user->getIconURL($size);
+
+	if (strpos($profileUrl, 'json/icons/user')) {
+		$profileUrl = $site_url . 'mod/profile/icondirect.php?size='. $size . '&guid=' . $user->guid;
+	} else if (strpos($profileUrl, 'json/file/icons')) {
+		$icon_file_name = basename($profileUrl);
+		$profileUrl = $site_url . 'mod/file/graphics/icons/' . $icon_file_name;
+	} else if (strpos($profileUrl, 'json/groups/')) {
+		$icon_file_name = basename($profileUrl);
+		$profileUrl = $site_url . 'mod/groups/graphics/' . $icon_file_name;
+	}
+
+	return $profileUrl;
+}

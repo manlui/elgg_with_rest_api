@@ -21,7 +21,7 @@ function messages_read($guid) {
 			$message['user']['guid'] = $user->guid;
 			$message['user']['name'] = $user->name;
 			$message['user']['username'] = $user->username;
-			$message['user']['avatar_url'] = get_entity_icon_url($user,'small');
+			$message['user']['avatar_url'] = getProfileIcon($user); //$user->getIconURL('small');
 			
 			$message['timestamp'] = time_ago((int)$single->time_created);
 			
@@ -100,7 +100,7 @@ function messages_inbox($limit = 20, $offset = 0) {
 			$message['user']['guid'] = $user->guid;
 			$message['user']['name'] = $user->name;
 			$message['user']['username'] = $user->username;
-			$message['user']['avatar_url'] = get_entity_icon_url($user,'small');
+			$message['user']['avatar_url'] = getProfileIcon($user); //$user->getIconURL('small');
 			
 			$message['timestamp'] = time_ago((int)$single->time_created);
 			
@@ -170,7 +170,7 @@ function messages_sent($limit = 10, $offset = 0) {
 			$message['user']['guid'] = $user->guid;
 			$message['user']['name'] = $user->name;
 			$message['user']['username'] = $user->username;
-			$message['user']['avatar_url'] = get_entity_icon_url($user,'small');
+			$message['user']['avatar_url'] = getProfileIcon($user); //$user->getIconURL('small');
 			
 			$message['timestamp'] = time_ago((int)$single->time_created);
 			

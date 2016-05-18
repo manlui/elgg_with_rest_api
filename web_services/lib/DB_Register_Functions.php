@@ -4,16 +4,13 @@ class DB_Register_Functions {
 
     private $db;
 
-    //put your code here
     // constructor
     function __construct() {
         $path = elgg_get_plugins_path();
         include_once $path . 'web_services/lib/DB_connect.php';
-//        $path = elgg_get_plugins_path();
-//        include_once $path.'gcm/DB_connect.php';
-        // connecting to database
-        $this->db = new DB_Connect();
-        $this->db->connect();
+
+        $conn = new DB_Connect();
+        $this->db = $conn->connect();
     }
 
     // destructor
@@ -24,18 +21,24 @@ class DB_Register_Functions {
     /**
      * Storing new user
      * returns user details
+     * @param $name
+     * @param $account
+     * @param $gcm_regid
+     * @param $elgg_post
+     * @param $elgg_message
+     * @return array|bool|null
      */
     public function storeUser($name, $account, $gcm_regid, $elgg_post, $elgg_message) {
         // insert user into database
-        $result = mysql_query("INSERT INTO gcm_users(name, account, gcm_regid, elgg_post, elgg_message, created_at) VALUES('$name', '$account', '$gcm_regid', '$elgg_post', '$elgg_message',NOW())");
+        $result = mysqli_query($this->db, "INSERT INTO gcm_users(name, account, gcm_regid, elgg_post, elgg_message, created_at) VALUES('$name', '$account', '$gcm_regid', '$elgg_post', '$elgg_message',NOW())");
         // check for successful store
         if ($result) {
             // get user details
-            $id = mysql_insert_id(); // last inserted id
-            $result = mysql_query("SELECT * FROM gcm_users WHERE id = $id") or die(mysql_error());
+            $id = mysqli_insert_id($this->db); // last inserted id
+            $result = mysqli_query($this->db, "SELECT * FROM gcm_users WHERE id = $id");
             // return user details
             if (mysql_num_rows($result) > 0) {
-                return mysql_fetch_array($result);
+                return mysqli_fetch_array($result);
             } else {
                 return false;
             }
@@ -48,25 +51,37 @@ class DB_Register_Functions {
      * Getting all users
      */
     public function getAllUsers() {
-        $result = mysql_query("select * FROM gcm_users");
+        $result = mysqli_query($this->db, "select * FROM gcm_users");
         return $result;
     }
 
+    /**
+     * @param $name
+     * @param $account
+     * @param $gcm_regid
+     * @param $elgg_post
+     * @param $elgg_message
+     * @return array|bool|null
+     */
     public function updateUser($name, $account, $gcm_regid, $elgg_post, $elgg_message)
     {
-        $result = mysql_query("UPDATE gcm_users SET name='$name', account='$account', elgg_post='$elgg_post', elgg_message='$elgg_message' WHERE gcm_regid='$gcm_regid'");
+        $result = mysqli_query($this->db, "UPDATE gcm_users SET name='$name', account='$account', elgg_post='$elgg_post', elgg_message='$elgg_message' WHERE gcm_regid='$gcm_regid'");
 
         if (mysql_num_rows($result) > 0) {
-            return mysql_fetch_array($result);;
+            return mysqli_fetch_array($result);;
         } else {
             return false;
         }
     }
 
+    /**
+     * @param $gcm_regid
+     * @return bool
+     */
     public function checkUser($gcm_regid)
     {
-        $result = mysql_query("SELECT * FROM gcm_users WHERE gcm_regid = '$gcm_regid'") or die(mysql_error());
-        if (mysql_num_rows($result) > 0) {
+        $result = mysqli_query($this->db, "SELECT * FROM gcm_users WHERE gcm_regid = '$gcm_regid'");
+        if (mysqli_num_rows($result) > 0) {
             return true;
         } else {
             return false;
@@ -75,18 +90,25 @@ class DB_Register_Functions {
 
     public function getRegId($recipient_username)
     {
-        $results = mysql_query("select * FROM gcm_users WHERE account = '$recipient_username'");
+        $results = mysqli_query($this->db, "select * FROM gcm_users WHERE account = '$recipient_username'");
         return $results;
-//        while ($rows[] = mysql_fetch_array($results, MYSQL_ASSOC));
-//        return $rows;
     }
 
+    /**
+     * @param $regId
+     * @return bool|mysqli_result
+     */
     public function deleteRegId($regId)
     {
-        $result = mysql_query("DELETE FROM gcm_users WHERE gcm_regid = '$regId'");
+        $result = mysqli_query($this->db, "DELETE FROM gcm_users WHERE gcm_regid = '$regId'");
         return $result;
     }
 
+    /**
+     * @param $old_regId
+     * @param $new_regId
+     * @return bool
+     */
     public function updateNewRegId($old_regId, $new_regId)
     {
         $result = $this->checkRegId($new_regId);
@@ -98,7 +120,7 @@ class DB_Register_Functions {
                 return false;
             }
         } else {
-            $result = mysql_query("UPDATE gcm_users SET gcm_regid='$new_regId' WHERE gcm_regid='$old_regId'");
+            $result = mysqli_query($this->db, "UPDATE gcm_users SET gcm_regid='$new_regId' WHERE gcm_regid='$old_regId'");
             if ($result) {
                 return true;
             } else {
@@ -107,11 +129,15 @@ class DB_Register_Functions {
         }
     }
 
+    /**
+     * @param $regId
+     * @return array|bool|null
+     */
     public function checkRegId($regId)
     {
-        $result = mysql_query("select * FROM gcm_users WHERE gcm_regid = '$regId'");
+        $result = mysqli_query($this->db, "select * FROM gcm_users WHERE gcm_regid = '$regId'");
         if (mysql_num_rows($result) > 0) {
-            return mysql_fetch_array($result);
+            return mysqli_fetch_array($result);
         } else {
             return false;
         }
@@ -119,4 +145,3 @@ class DB_Register_Functions {
 
 }
 
-?>
