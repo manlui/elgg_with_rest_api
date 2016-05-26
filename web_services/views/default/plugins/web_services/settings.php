@@ -1,10 +1,17 @@
 <?php
 $insert_view = elgg_view('webservicessettings/extend');
 
-$key_string = elgg_echo('Enter Google API Key here');
+$key_string = elgg_echo('Enter Google GCM Server API Key here');
 $key_view = elgg_view('input/text', array(
 	'name' => 'params[google_api_key]',
 	'value' => $vars['entity']->google_api_key,
+	'class' => 'text_input',
+));
+
+$sender_id_string = elgg_echo('Enter Google GCM Sender Id here');
+$sender_id_view = elgg_view('input/text', array(
+	'name' => 'params[google_sender_id]',
+	'value' => $vars['entity']->google_sender_id,
 	'class' => 'text_input',
 ));
 
@@ -18,7 +25,7 @@ $logo_view = elgg_view('input/url', array(
 $settings = <<<__HTML
 <div>$insert_view</div>
 <div>$key_string $key_view</div>
-<div style="font-size:12px"><b>Note:</b><br>Google API Key is required for push notification on your mobile. You can leave this blank if you don\'t intend to use the push notification service.<br>Enable "Site Notification" plugin to enable the push notification feature (Mandatory). <br>You can obtain your Google API Key from <a href="http://console.developers.google.com" target="_blank">here</a>. Select "Google Cloud Messaging" when requesting for the API Key.<br><br></div>
+<div>$sender_id_string $sender_id_view</div>
 <div>$logo_string $logo_view</div>
 __HTML;
 

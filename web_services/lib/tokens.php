@@ -161,6 +161,7 @@ function auth_gettoken($username, $password) {
 	if (true === elgg_authenticate($username, $password)) {
 		$return['auth_token'] = create_user_token($username);
 		$return['api_key'] = get_api_key();
+		$return['gcm_sender_id'] = get_gcm_sender_id();
 		if ($return) {
 			return $return;
 		}
