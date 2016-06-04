@@ -130,7 +130,7 @@ function wire_get_posts($context, $limit = 20, $offset = 0, $username) {
             $wire['owner']['guid'] = $owner->guid;
             $wire['owner']['name'] = $owner->name;
             $wire['owner']['username'] = $owner->username;
-            $wire['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $wire['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
             $wire['time_created'] = time_ago($single->time_created);
             $wire['description'] = $single->description;
@@ -266,7 +266,7 @@ function wire_get_comments($guid, $username, $limit = 20, $offset = 0){
             $comment['owner']['guid'] = $owner->guid;
             $comment['owner']['name'] = $owner->name;
             $comment['owner']['username'] = $owner->username;
-            $comment['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $comment['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
             $comment['time_created'] = time_ago($single->time_created);
             $comment['like_count'] = likes_count_number_of_likes($single->guid);

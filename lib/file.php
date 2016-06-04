@@ -153,7 +153,7 @@ function file_get_files($context, $username, $limit = 20, $offset = 0, $group_gu
 			$file['owner']['guid'] = $owner->guid;
 			$file['owner']['name'] = $owner->name;
             $file['owner']['username'] = $owner->username;
-			$file['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+			$file['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
 			$file['container_guid'] = $single->container_guid;
 			$file['access_id'] = $single->access_id;
@@ -170,8 +170,8 @@ function file_get_files($context, $username, $limit = 20, $offset = 0, $group_gu
                 $file['file_icon_large'] = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $single->guid . '&size=largethumb';
                 $file['file_url'] = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $single->guid . '&size=original';
             } else {
-                $file['file_icon'] = $single->getIconURL('small');
-                $file['file_icon_large'] = $single->getIconURL('large');
+                $file['file_icon'] = getProfileIcon($single); //$single->getIconURL('small');
+                $file['file_icon_large'] = getProfileIcon($single, 'large'); //$single->getIconURL('large');
                 $file['file_url'] = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $single->guid . '&size=' . $single->originalfilename;
             }
 
@@ -267,9 +267,8 @@ function file_get_post($guid, $size, $username) {
 
 				// caching images for 10 days
 				header("Content-type: $mime");
-				header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', strtotime("+10 days")), true);
-				header("Pragma: public", true);
-				header("Cache-Control: public", true);
+				
+				
 				header("Content-Length: " . strlen($contents));
 
 				echo $contents;
@@ -352,7 +351,7 @@ function file_get_file($guid, $username) {
     $file['owner']['guid'] = $owner->guid;
     $file['owner']['name'] = $owner->name;
     $file['owner']['username'] = $owner->username;
-    $file['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+    $file['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
     $file['container_guid'] = $single->container_guid;
     $file['access_id'] = $single->access_id;
@@ -369,8 +368,8 @@ function file_get_file($guid, $username) {
         $file['file_icon_large'] = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $single->guid . '&size=largethumb';
         $file['file_url'] = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $single->guid . '&size=original';
     } else {
-        $file['file_icon'] = $single->getIconURL('small');
-        $file['file_icon_large'] = $single->getIconURL('large');
+        $file['file_icon'] = getProfileIcon($owner); //$single->getIconURL('small');
+        $file['file_icon_large'] = getProfileIcon($single, 'large'); //$single->getIconURL('large');
         $file['file_url'] = $site_url . 'services/api/rest/json/?method=file.get_post' . '&guid=' . $single->guid . '&size=' . $single->originalfilename;
     }
 
@@ -431,7 +430,7 @@ function file_get_comments($guid, $username, $limit = 20, $offset = 0){
             $comment['owner']['guid'] = $owner->guid;
             $comment['owner']['name'] = $owner->name;
             $comment['owner']['username'] = $owner->username;
-            $comment['owner']['avatar_url'] = get_entity_icon_url($owner,'small');
+            $comment['owner']['avatar_url'] = getProfileIcon($owner); //$owner->getIconURL('small');
 
             $comment['time_created'] = time_ago($single->time_created);
             $comment['like_count'] = likes_count_number_of_likes($single->guid);
@@ -505,7 +504,7 @@ function file_save_post($title, $description, $username, $access, $tags) {
 	$new_file = true;
 
 	if ($new_file) {
-		$file = new FilePluginFile();
+		$file = new ElggFile();
 		$file->subtype = "file";
 
 		// if no title on new upload, grab filename

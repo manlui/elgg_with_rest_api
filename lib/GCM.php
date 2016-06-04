@@ -17,7 +17,7 @@ class GCM {
         $results = $db->getRegId($recipient_username);
         $body = strip_tags($message_sent_description);
 
-        while ($row = mysql_fetch_array($results)) {
+        while ($row = mysqli_fetch_array($results)) {
             $gcm_regid = $row['gcm_regid'];
             if ($gcm_regid) {
                 $registatoin_ids = array($gcm_regid);
@@ -47,8 +47,11 @@ class GCM {
 
     /**
      * Sending Push Notification
+     * @param $registration_ids
+     * @param $message
+     * @return bool|mixed
      */
-    public function send_notification($registatoin_ids, $message) {
+    public function send_notification($registration_ids, $message) {
 
         if ($message) {
             // include config
@@ -58,7 +61,7 @@ class GCM {
             $url = 'https://android.googleapis.com/gcm/send';
 
             $fields = array(
-                'registration_ids' => $registatoin_ids,
+                'registration_ids' => $registration_ids,
                 'data' => $message,
             );
 

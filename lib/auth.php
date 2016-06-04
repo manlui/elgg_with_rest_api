@@ -12,7 +12,7 @@ function auth_token_check($token, $username, $password)
     if (validate_user_token($token, 1) == $user->guid) {
         $return['auth_token'] = 'OK';
         $return['api_key'] = get_api_key();
-
+        $return['gcm_sender_id'] = get_gcm_sender_id();
     } else {
         $return = auth_gettoken($username, $password);
     }
@@ -53,4 +53,12 @@ function get_api_key() {
 
     }
     return $api_key;
+}
+
+function get_gcm_sender_id() {
+    $gcm_sender_id = elgg_get_plugin_setting('google_sender_id', 'web_services');
+    if (!$gcm_sender_id) {
+        $gcm_sender_id = '';
+    }
+    return $gcm_sender_id;
 }
