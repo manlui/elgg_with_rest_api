@@ -56,7 +56,7 @@ function get_api_key() {
 }
 
 function get_gcm_sender_id() {
-    $gcm_sender_id = elgg_get_plugin_setting('google_sender_id', 'web_services');
+    $gcm_sender_id = elgg_get_plugin_setting('google_sender_id', 'elgg_with_rest_api');
     if (!$gcm_sender_id) {
         $gcm_sender_id = '';
     }

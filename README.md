@@ -1,4 +1,4 @@
-Web Services
+Elgg Web Services with REST API
 ============
 
 This plugin provides the web services API that was packaged with Elgg core from

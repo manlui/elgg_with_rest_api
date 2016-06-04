@@ -93,7 +93,7 @@ function mobile_notifications_send($hook, $type, $result, $params) {
 	$recipient = $message->getRecipient();
 
 	//Send GCN to Mobile
-	include_once elgg_get_plugins_path().'web_services/lib/GCM.php';
+	include_once elgg_get_plugins_path().'elgg_with_rest_api/lib/GCM.php';
 	$gcm = new GCM();
 	$result = $gcm->setup_message($sender->name, $sender->username, $recipient->name, $recipient->username, $message->subject, $message->body);
 	if ($result) {

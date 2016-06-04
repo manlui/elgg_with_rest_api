@@ -6,7 +6,7 @@ class GCM {
     // constructor
     function __construct() {
         $path = elgg_get_plugins_path();
-        include_once $path.'web_services/lib/DB_Register_Functions.php';
+        include_once $path.'elgg_with_rest_api/lib/DB_Register_Functions.php';
     }
 
     public function setup_message($sender_name, $sender_username, $recipient_name, $recipient_username, $message_sent_title, $message_sent_description)
@@ -55,7 +55,7 @@ class GCM {
 
         if ($message) {
             // include config
-            $GOOGLE_API_KEY = elgg_get_plugin_setting('google_api_key', 'web_services');
+            $GOOGLE_API_KEY = elgg_get_plugin_setting('google_api_key', 'elgg_with_rest_api');
 
             // Set POST variables
             $url = 'https://android.googleapis.com/gcm/send';

@@ -7,7 +7,7 @@ class DB_Register_Functions {
     // constructor
     function __construct() {
         $path = elgg_get_plugins_path();
-        include_once $path . 'web_services/lib/DB_connect.php';
+        include_once $path . 'elgg_with_rest_api/lib/DB_connect.php';
 
         $conn = new DB_Connect();
         $this->db = $conn->connect();
