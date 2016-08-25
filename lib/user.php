@@ -711,7 +711,7 @@ elgg_ws_expose_function('user.register',
 	"Register user",
 	'GET',
     true,
-    true);
+    false);
 
 elgg_ws_expose_function('user.friend.add',
 	"user_friend_add",
