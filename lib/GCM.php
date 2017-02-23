@@ -86,6 +86,7 @@ class GCM {
 
             // Execute post
             $result = curl_exec($ch);
+            error_log("[".date(DATE_RFC2822). " " . $result . PHP_EOL, 3, "web_error_log");
             if ($result === FALSE) {
                 die('Curl failed: ' . curl_error($ch));
                 return false;
@@ -103,7 +104,9 @@ class GCM {
         $db = new DB_Register_Functions();
         $result = $db->deleteRegId($regId);
         if ($result) {
+            error_log("[".date(DATE_RFC2822)."] Success removed RegId". PHP_EOL, 3, "web_error_log");
         } else {
+            error_log("[".date(DATE_RFC2822)."] Fail to remove RedId". PHP_EOL, 3, "web_error_log");
         }
     }
 
@@ -112,7 +115,9 @@ class GCM {
         $db = new DB_Register_Functions();
         $result = $db->updateNewRegId($old_regId, $new_regId);
         if ($result) {
+            error_log("[".date(DATE_RFC2822)."] Success updated RegId". PHP_EOL, 3, "web_error_log");
         } else {
+            error_log("[".date(DATE_RFC2822)."] Fail to update RedId". PHP_EOL, 3, "web_error_log");
         }
     }
 }

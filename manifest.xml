@@ -3,7 +3,7 @@
 	<name>Elgg Web services with REST API</name>
 	<id>elgg_with_rest_api</id>
 	<author>Rohit Gupta</author>
-	<version>2.0</version>
+	<version>2.1</version>
 	<description>Provides a framework for building RPC web services.</description>
 	<license>GNU General Public License version 2</license>
 

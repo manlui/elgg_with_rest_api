@@ -39,6 +39,7 @@ function site_river_short($username, $limit=20, $offset=0, $from_guid) {
 
     $activities = elgg_get_river($options);
     //$test2 = elgg_list_river($options);
+    //error_log($test2, 3, "web_error_log");
 
     $login_user = $user;
     $handle = getRiverActivity($activities, $user, $login_user);
