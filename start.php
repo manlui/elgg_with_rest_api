@@ -26,7 +26,12 @@ function ws_init() {
 	elgg_register_library('elgg:ws:bookmark', "$lib_dir/bookmark.php");
 	elgg_register_library('elgg:ws:group', "$lib_dir/group.php");
 	elgg_register_library('elgg:ws:activity', "$lib_dir/activity.php");
-
+	elgg_register_library('elgg:ws:facebook', "$lib_dir/facebook.php");
+	elgg_register_library('elgg:ws:events', "$lib_dir/events.php");
+	elgg_register_library('elgg:ws:search', "$lib_dir/search.php");
+	elgg_register_library('elgg:ws:site_notifications', "$lib_dir/site_notifications.php");
+	elgg_register_library('elgg:ws:web_login', "$lib_dir/web_login.php");
+	
 	elgg_load_library('elgg:ws:api_user');
 	elgg_load_library('elgg:ws:tokens');
 	elgg_load_library('elgg:ws:core');
@@ -44,7 +49,13 @@ function ws_init() {
 	elgg_load_library('elgg:ws:bookmark');
 	elgg_load_library('elgg:ws:group');
 	elgg_load_library('elgg:ws:activity');
-
+	elgg_load_library('elgg:ws:facebook');
+	elgg_load_library('elgg:ws:events');
+	elgg_load_library('elgg:ws:search');
+	elgg_load_library('elgg:ws:site_notifications');
+	elgg_load_library('elgg:ws:web_login');
+	
+	
 	elgg_register_page_handler('services', 'ws_page_handler');
 
 	// Register a service handler for the default web services
@@ -97,9 +108,9 @@ function mobile_notifications_send($hook, $type, $result, $params) {
 	$gcm = new GCM();
 	$result = $gcm->setup_message($sender->name, $sender->username, $recipient->name, $recipient->username, $message->subject, $message->body);
 	if ($result) {
-		error_log("Message sent successfully");
+		error_log("[".date(DATE_RFC2822)."] Message sent successfully: ". $sender->name . ", " . $sender->username . ", " . $recipient->name . ", " . $recipient->username . ", " . $message->subject . ", " . $message->body . PHP_EOL, 3, "web_error_log");
 	} else {
-		error_log("Failed to send message");
+		error_log("[".date(DATE_RFC2822)."] Failed to send message: ". $sender->name . ", " . $sender->username . ", " . $recipient->name . ", " . $recipient->username . ", " . $message->subject . ", " . $message->body . PHP_EOL, 3, "web_error_log");
 	}
 }
 

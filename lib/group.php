@@ -118,7 +118,7 @@ function group_get_list($context,  $limit = 20, $offset = 0, $username, $from_gu
             if ($single->getTags() == null) {
                 $group['tags'] = '';
             } else {
-                $group['tags'] = implode(",", $single->getTags()); //$single->getTags();
+                $group['tags'] = $single->getTags(); //$single->getTags();
             }
 
 

@@ -39,7 +39,6 @@ function site_river_short($username, $limit=20, $offset=0, $from_guid) {
 
     $activities = elgg_get_river($options);
     //$test2 = elgg_list_river($options);
-    //error_log($test2);
 
     $login_user = $user;
     $handle = getRiverActivity($activities, $user, $login_user);
@@ -601,11 +600,74 @@ function getRiverActivity($activities, $user, $login_user) {
             } else {
                 $entityString = '';
             }
+		// Custome formatting start here -- Rohit Gupta (30th Dec 2016)
+        } else if ($activity->view == 'river/object/badge/assign' || $activity->view == 'river/object/badge/award') {
+            $isObject = true;
+			$performed_by = $activity->getSubjectEntity();
+			$performed_on = $activity->getObjectEntity();
+			$object = $activity->getObjectEntity();
 
-        } else {
-            //$isObject = true;
-            //$entityTxt = get_object_entity_as_row($activity->object_guid)->description;
-        }
+			if ($guid = $object->badges_badge) {
+				$badge = get_entity($guid);
+				$badge_url = $badge->badges_url;
+
+				if ($badge_url) {
+					$badge_view = "<a href=\"" . $badge_url . "\"><img title=\"" . $badge->title . "\" src=\"" . elgg_add_action_tokens_to_url(elgg_get_site_url() . "action/badges/view?file_guid=" . $badge->guid) . "\"></a>";
+				} else {
+					$badge_view = "<img title=\"" . $badge->title . "\" src=\"" . elgg_add_action_tokens_to_url(elgg_get_site_url() . "action/badges/view?file_guid=" . $badge->guid) . "\">";
+				}
+
+				$url = $performed_by->name;
+				$entityString = elgg_echo('badges:river:assigned', array($url, $badge->title)) . "<br>" . $badge_view;
+				$entityTxt = 'A new Badge was awarded!';
+			}
+		} else if ($activity->view == 'river/event_relationship/create') {
+					$isObject = true;
+					$user = get_entity($activity->subject_guid);
+					$event = get_entity($activity->object_guid);
+
+					$subject_url = "<a href='" . $user->getURL() . "'>" . $user->name . "</a>";
+					$event_url = "<a href='" . $event->getURL() . "'>" . $event->title . "</a>";
+
+					$relationtype = $event->getRelationshipByUser($user->getGUID()); 
+					$entityTxt = "posted a new event!";
+					$entityString = elgg_echo("event_manager:river:event_relationship:create:" . $relationtype, array($subject_url, $event_url));
+		} else if ($activity->view == 'river/object/event/create') {
+					$isObject = true;
+					$object = $activity->getObjectEntity();
+					$entityString = elgg_get_excerpt($object->description);
+					$entityTxt = "created event " . $object->title;
+		} else if ($activity->view == 'river/object/questions/create') {
+					$isObject = true;
+					$object = $activity->getObjectEntity();
+					$entityString = elgg_get_excerpt($object->description);
+					$entityTxt = "asked a new question!";
+		} else if ($activity->view == 'river/relationship/member_of_site/create') {
+					$isObject = true;
+					$object = $activity->getObjectEntity();
+					$entityString = elgg_get_excerpt($object->description);
+					$entityTxt = "joined the site!";
+					
+		} else if ($activity->view == 'river/object/videos/create') {
+					$isObject = true;
+					$object = $activity->getObjectEntity();
+					$excerpt = elgg_get_excerpt($object->description);
+
+					$video_url = $object->video_url;
+
+					$video_url = str_replace("feature=player_embedded&amp;", "", $video_url);
+					$video_url = str_replace("feature=player_detailpage&amp;", "", $video_url);
+					$video_url = str_replace("http://youtu.be","https://www.youtube.be",$video_url);
+					$guid = $object->guid;
+					$entityTxt = "posted a video!";
+					$entityString = $excerpt . "|" . $video_url;
+		} else {
+					$isObject = true;
+					$object = $activity->getObjectEntity();
+					$entityString = elgg_get_excerpt($object->description);
+					$entityTxt = "";
+		}
+		// Custome formatting end here -- Rohit Gupta (30th Dec 2016)
 
         if ($isObject) {
             $handle[] = array(

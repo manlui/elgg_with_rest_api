@@ -58,7 +58,7 @@ class GCM {
             $GOOGLE_API_KEY = elgg_get_plugin_setting('google_api_key', 'elgg_with_rest_api');
 
             // Set POST variables
-            $url = 'https://android.googleapis.com/gcm/send';
+            $url = 'https://fcm.googleapis.com/fcm/send';
 
             $fields = array(
                 'registration_ids' => $registration_ids,
@@ -86,7 +86,6 @@ class GCM {
 
             // Execute post
             $result = curl_exec($ch);
-            error_log($result);
             if ($result === FALSE) {
                 die('Curl failed: ' . curl_error($ch));
                 return false;
@@ -104,9 +103,7 @@ class GCM {
         $db = new DB_Register_Functions();
         $result = $db->deleteRegId($regId);
         if ($result) {
-            error_log("Success removed RegId");
         } else {
-            error_log("Fail to remove RedId");
         }
     }
 
@@ -115,9 +112,7 @@ class GCM {
         $db = new DB_Register_Functions();
         $result = $db->updateNewRegId($old_regId, $new_regId);
         if ($result) {
-            error_log("Success updated RegId");
         } else {
-            error_log("Fail to update RedId");
         }
     }
 }

@@ -37,7 +37,7 @@ class DB_Register_Functions {
             $id = mysqli_insert_id($this->db); // last inserted id
             $result = mysqli_query($this->db, "SELECT * FROM gcm_users WHERE id = $id");
             // return user details
-            if (mysql_num_rows($result) > 0) {
+            if (mysqli_num_rows($result) > 0) {
                 return mysqli_fetch_array($result);
             } else {
                 return false;
@@ -67,7 +67,7 @@ class DB_Register_Functions {
     {
         $result = mysqli_query($this->db, "UPDATE gcm_users SET name='$name', account='$account', elgg_post='$elgg_post', elgg_message='$elgg_message' WHERE gcm_regid='$gcm_regid'");
 
-        if (mysql_num_rows($result) > 0) {
+        if (mysqli_num_rows($result) > 0) {
             return mysqli_fetch_array($result);;
         } else {
             return false;
@@ -136,7 +136,7 @@ class DB_Register_Functions {
     public function checkRegId($regId)
     {
         $result = mysqli_query($this->db, "select * FROM gcm_users WHERE gcm_regid = '$regId'");
-        if (mysql_num_rows($result) > 0) {
+        if (mysqli_num_rows($result) > 0) {
             return mysqli_fetch_array($result);
         } else {
             return false;

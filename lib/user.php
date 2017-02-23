@@ -193,12 +193,36 @@ function user_check_username_availability($username) {
  */           
 function user_register($name, $email, $username, $password) {
 	$user = get_user_by_username($username);
-	if (!$user) {
+	$user_email = get_user_by_email($email);
+	if (!$user && !$user_email) {
 		$return['success'] = true;
+		$return['message'] = elgg_echo("$name please confirm your email address for $email!");
 		$return['guid'] = register_user($username, $password, $name, $email);
+		
+		$user = get_user_by_username($username);
+		// disable user to prevent showing up on the site
+		// set context so our canEdit() override works
+		elgg_push_context('uservalidationbyemail_new_user');
+		$hidden_entities = access_get_show_hidden_status();
+		access_show_hidden_entities(TRUE);
+
+		// Don't do a recursive disable.  Any entities owned by the user at this point
+		// are products of plugins that hook into create user and might need
+		// access to the entities.
+		// @todo That ^ sounds like a specific case...would be nice to track it down...
+		$user->disable('uservalidationbyemail_new_user', FALSE);
+
+		// set user as unvalidated and send out validation email
+		elgg_set_user_validation_status($user->guid, FALSE);
+		uservalidationbyemail_request_validation($user->guid);
+
+		elgg_pop_context();
+		access_show_hidden_entities($hidden_entities);
 	} else {
 		$return['success'] = false;
-		$return['message'] = elgg_echo('registration:userexists');
+		if($user_email) { $message1 = "Email ID"; }
+		if($user) { $message2 = "Username"; }
+		if($message1 && $message2) { $return['message'] = $message1. " and ". $message2 ." already exist!"; } else { $return['message'] = $message1 . $message2 ." already exist!";  }
 	}
 	return $return;
 }
@@ -699,7 +723,7 @@ elgg_ws_expose_function('user.check_username_availability',
 	"Get Username by email",
 	'GET',
     true,
-    true);
+    false);
 
 elgg_ws_expose_function('user.register',
 	"user_register",
@@ -711,7 +735,7 @@ elgg_ws_expose_function('user.register',
 	"Register user",
 	'GET',
     true,
-    true);
+    false);
 
 elgg_ws_expose_function('user.friend.add',
 	"user_friend_add",
@@ -821,3 +845,34 @@ function getProfileIcon($user, $size='small') {
 
 	return $profileUrl;
 }
+
+function  user_send_new_password_request($username){
+
+if (strpos($username, '@') !== false && ($users = get_user_by_email($username))) {
+	$username = $users[0]->username;
+}
+$user = get_user_by_username($username);
+if ($user) {
+	if (send_new_password_request($user->guid)) {
+		$return['success'] = true;
+		$return['message'] = elgg_echo('user:password:changereq:success');
+	} else {
+		$return['success'] = false;
+		$return['message'] = elgg_echo('user:password:changereq:fail');
+	}
+} else {
+	$return['success'] = false;
+	$return['message'] = elgg_echo('user:username:notfound', array($username));
+}
+return $return;
+}
+
+elgg_ws_expose_function('user.forgot_password',
+	"user_send_new_password_request",
+	array(
+	'username' => array ('type' => 'string'),
+	),
+	"Forgot/Lost Password",
+	'GET',
+    true,
+    false);

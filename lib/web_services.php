@@ -664,7 +664,7 @@ function _php_api_error_handler($errno, $errmsg, $filename, $linenum, $vars) {
 
 	switch ($errno) {
 		case E_USER_ERROR:
-			error_log("ERROR: " . $error);
+			error_log("[".date(DATE_RFC2822)."] ERROR: " . $error . PHP_EOL, 3, elgg_get_root_path ()."web_error_log");
 			$ERRORS[] = "ERROR: " . $error;
 
 			// Since this is a fatal error, we want to stop any further execution but do so gracefully.
@@ -673,12 +673,12 @@ function _php_api_error_handler($errno, $errmsg, $filename, $linenum, $vars) {
 
 		case E_WARNING :
 		case E_USER_WARNING :
-			error_log("WARNING: " . $error);
+			error_log("[".date(DATE_RFC2822)."] WARNING: " . $error . PHP_EOL, 3, elgg_get_root_path ()."web_error_log");
 			$ERRORS[] = "WARNING: " . $error;
 			break;
 
 		default:
-			error_log("DEBUG: " . $error);
+			error_log("[".date(DATE_RFC2822)."] DEBUG: " . $error . PHP_EOL, 3, elgg_get_root_path ()."web_error_log");
 			$ERRORS[] = "DEBUG: " . $error;
 	}
 }
@@ -696,7 +696,7 @@ function _php_api_error_handler($errno, $errmsg, $filename, $linenum, $vars) {
  */
 function _php_api_exception_handler($exception) {
 
-	error_log("*** FATAL EXCEPTION (API) *** : " . $exception);
+	error_log("[".date(DATE_RFC2822)."] *** FATAL EXCEPTION (API) *** : " . $exception . PHP_EOL, 3, elgg_get_root_path ()."web_error_log");
 
 	$code   = $exception->getCode() == 0 ? ErrorResult::$RESULT_FAIL : $exception->getCode();
 	$result = new ErrorResult($exception->getMessage(), $code, NULL);

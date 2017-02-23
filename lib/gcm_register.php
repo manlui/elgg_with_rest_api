@@ -50,7 +50,7 @@ function gcm_register($regId, $account, $name) {
             $res = $db->storeUser($name, $account, $regId, $elgg_post, $elgg_message);
             $registration_ids = array($regId);
             $message = array("from_name" => "Core Server",
-                "subject" => "Core App Notification",
+                "subject" => "Campus Karma Notification",
                 "message" => "Enable Receive Notification");
 
             $result = $gcm->send_notification($registration_ids, $message);
@@ -78,4 +78,4 @@ elgg_ws_expose_function('gcm.register',
     "GCM a Register for Notification",
     'POST',
     true,
-    true);
+    false);
