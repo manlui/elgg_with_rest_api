@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<style>
+html,body{
+	font-family: Palatino, serif;
+}
+</style>
+</head>
+<body>
+
+<div data-role="page" id="pageone">
+  <div data-role="header">
+    <h1>Elgg - List of APIs</h1>
+  </div>
+  
+  <div data-role="main" class="ui-content">
+    <h2>Instructions</h2>
+	<div data-role="collapsible"><h4>How to use the APIs</h4>
+	<font size="2.5em"><br>Elgg provides a powerful framework for building web services. This allows developers to expose functionality to other web sites, desktop applications or mobile application along with doing integrations with third-party web applications. While we call the API RESTful, it is actually a REST/RPC hybrid similar to the APIs provided by sites like Flickr and Twitter.<br><br>
+	Go to <a href="https://domain.com/services/api/rest/json/?method=system.api.list" target="_blank">https://domain.com/services/api/rest/json/?method=system.api.list</a> and you should be able to see all the method listed as API call.<br>The same APIs has been listed below as you can see the method name in the below list along with other relevant details.
+	<br><br>
+	To call the APIs, all you need to do is call the expose method in your application.<br>For example, if you want to use the user login API, you could make a POST request to the url: <a href="https://domain.com/services/api/rest/json/?method=auth.gettoken&username=your_username&password=your_password" target="_blank">https://domain.com/services/api/rest/json/?method=auth.gettoken&username=your_username&password=your_password</a> (where <b>auth.gettoken</b> is one of the APIs listed below) and you should see JSON data like this:
+	<blockquote><pre> {
+  "status": 0,
+  "result": {
+     "auth_token": "afadfadf99adf0fg9f98778adfa",
+     "api_key": "afdakfljl3243fajlkfdj8982832493dsfweioruewior"
+  }
+ }</pre></blockquote>
+	You can find the list of exposed methods below along with the following information within the API block:
+	<ul>
+	<li><b>description</b>: Description of the API to help you understand the purpose of the API.</li>
+	<li><b>function</b>: Function used for the API (Internal - Only used for debugging of error if any).</li>
+	<li><b>parameters</b>: Parameter required to pass after the "https://domain.com/services/api/rest/json/?" url separated by "&". </li>
+	<li><b>call_method</b>: Defines the call_method either as GET or POST.</li>
+	<li><b>require_api_auth</b>: If "true" you have to pass the the api_key that is return from auth.gettoken API as shown above.</li>
+	<li><b>require_user_auth</b>: If "true" you have to pass the the auth_token that is return from auth.gettoken API as shown above.</li>
+	<br>The auth_token default expire is set to 60 minutes. The auth_token will return different value each time you make a call, however the api_key will be same.
+	</ul>
+	<i><b>Note to developers</b>: Further to add to the above instruction, Elgg uses a framework called <a href="https://elgg.org" target="_blank">Elgg</a> for its web services.<br>There are lots of information available on the official <a href="https://elgg.org/search?q=web+services&entity_subtype=discussion&entity_type=object&search_type=entities" target="_blank">elgg community</a> website regarding the <a href="http://learn.elgg.org/en/1.12/guides/web-services.html" target="_blank">web services</a> of Elgg.</i><br>
+	</font>
+	</div>
+  </div>
+	
+
+  <div data-role="main" class="ui-content">
+    <h2>List of APIs</h2>
+
+
+    <div data-role="collapsible"><h4>search.site</h4><ul data-role="listview"><li><pre>    search.site": {
+      "description": "Search the Site",
+      "parameters": {
+        "q": {
+          "type": "string",
+          "required": true
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        },
+        "search_type": {
+          "type": "string",
+          "required": false
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "entity_type": {
+          "type": "string",
+          "required": false
+        },
+        "entity_subtype": {
+          "type": "string",
+          "required": false
+        },
+        "sort": {
+          "type": "string",
+          "required": false
+        },
+        "order": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": false,
+      "require_user_auth": false
+    },</pre></li></ul></div>
+	<div data-role="collapsible"><h4>album.get_posts</h4><ul data-role="listview"><li><pre>    album.get_posts: {
+      "description": "GET all the albums",
+      "function": "album_get_posts",
+      "parameters": {
+        "context": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>album.getid</h4><ul data-role="listview"><li><pre>    album.getid: {
+      "description": "Get album id",
+      "function": "album_getid",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>auth.gettoken</h4><ul data-role="listview"><li><pre>    auth.gettoken: {
+      "description": "This API call lets a user obtain a user authentication token which can be used for authenticating future API calls.
+	  Pass it as the parameter auth_token",
+      "function": "auth_gettoken",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "password": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": false,
+      "require_user_auth": false
+    },</pre></li></ul></div><div data-role="collapsible"><h4>auth.token_check</h4><ul data-role="listview"><li><pre>    auth.token_check: {
+      "description": "Post a auth token check",
+      "function": "auth_token_check",
+      "parameters": {
+        "token": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "password": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": false
+    },</pre></li></ul></div><div data-role="collapsible"><h4>blog.delete_post</h4><ul data-role="listview"><li><pre>    blog.delete_post: {
+      "description": "Read a blog post",
+      "function": "blog_delete_post",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>blog.get_comments</h4><ul data-role="listview"><li><pre>    blog.get_comments: {
+      "description": "Get comments for a blog post",
+      "function": "blog_get_comments",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>blog.get_post</h4><ul data-role="listview"><li><pre>    blog.get_post: {
+      "description": "Read a blog post",
+      "function": "blog_get_post",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>blog.get_posts</h4><ul data-role="listview"><li><pre>    blog.get_posts: {
+      "description": "Get list of blog posts",
+      "function": "blog_get_posts",
+      "parameters": {
+        "context": {
+          "type": "string",
+          "required": true,
+          "default": "all"
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        },
+        "group_guid": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>blog.post_comment</h4><ul data-role="listview"><li><pre>    blog.post_comment: {
+      "description": "Post a comment on a blog post",
+      "function": "blog_post_comment",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        },
+        "text": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>blog.save_post</h4><ul data-role="listview"><li><pre>    blog.save_post: {
+      "description": "Post a blog post",
+      "function": "blog_save_post",
+      "parameters": {
+        "title": {
+          "type": "string",
+          "required": true
+        },
+        "body": {
+          "type": "string",
+          "required": true
+        },
+        "comment_status": {
+          "type": "string",
+          "required": true,
+          "default": "On"
+        },
+        "access": {
+          "type": "string",
+          "required": true,
+          "default": -2
+        },
+        "status": {
+          "type": "string",
+          "required": true,
+          "default": "published"
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "tags": {
+          "type": "string",
+          "required": false,
+          "default": ""
+        },
+        "excerpt": {
+          "type": "string",
+          "required": false,
+          "default": ""
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>bookmark.get_comments</h4><ul data-role="listview"><li><pre>    bookmark.get_comments: {
+      "description": "Get comments for a bookmark post",
+      "function": "blog_get_comments",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>bookmark.get_post</h4><ul data-role="listview"><li><pre>    bookmark.get_post: {
+      "description": "Read a bookmark post",
+      "function": "bookmark_get_post",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>bookmark.get_posts</h4><ul data-role="listview"><li><pre>    bookmark.get_posts: {
+      "description": "GET all the bookmarks",
+      "function": "bookmark_get_posts",
+      "parameters": {
+        "context": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "from_guid": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>bookmark.post_comment</h4><ul data-role="listview"><li><pre>    bookmark.post_comment: {
+      "description": "Post a comment on a bookmark post",
+      "function": "bookmark_post_comment",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        },
+        "text": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>bookmark.save_post</h4><ul data-role="listview"><li><pre>    bookmark.save_post: {
+      "description": "Post a bookmark post",
+      "function": "bookmark_save_post",
+      "parameters": {
+        "title": {
+          "type": "string",
+          "required": true
+        },
+        "address": {
+          "type": "string",
+          "required": true
+        },
+        "description": {
+          "type": "string",
+          "required": true
+        },
+        "access": {
+          "type": "string",
+          "required": true,
+          "default": -2
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "tags": {
+          "type": "string",
+          "required": false,
+          "default": ""
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>count.like_comment</h4><ul data-role="listview"><li><pre>    count.like_comment: {
+      "description": "Get number count like and comment",
+      "function": "count_like_comment",
+      "parameters": {
+        "entity_guid": {
+          "type": "int",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>file.get_comments</h4><ul data-role="listview"><li><pre>    file.get_comments: {
+      "description": "Get comments for a post",
+      "function": "file_get_comments",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div>
+	
+	<div data-role="collapsible"><h4>file.delete_comment</h4><ul data-role="listview"><li><pre>   file.delete_comment: {
+      "description": "Delete file comment",
+      "parameters": {
+        "comment_guid": {
+          "type": "int",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+      },</pre></li></ul></div>
+	  
+	  <div data-role="collapsible"><h4>file.delete_post</h4><ul data-role="listview"><li><pre>   file.delete_post: {
+      "description": "Delete file post",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+      },</pre></li></ul></div>
+	
+	<div data-role="collapsible"><h4>file.update_post</h4><ul data-role="listview"><li><pre>    file.update_post: {
+      "description":"Update file post",
+      "function": "file_update_post",
+      "parameters":{  
+        "guid":{  
+          "type":"int",
+          "required":true
+        },
+        "title":{  
+          "type":"string",
+          "required":true
+        },
+        "description":{  
+          "type":"string",
+          "required":true
+        },
+        "username":{  
+          "type":"string",
+          "required":true
+        },
+        "access":{  
+          "type":"string",
+          "required":true,
+          "default":-2
+        },
+        "tags":{  
+          "type":"string",
+          "required":false,
+          "default":""
+        }
+      },
+      "call_method":"POST",
+      "require_api_auth":true,
+      "require_user_auth":true
+    },</pre></li></ul></div>
+	
+	<div data-role="collapsible"><h4>file.get_file</h4><ul data-role="listview"><li><pre>    file.get_file: {
+      "description": "Get file data",
+      "function": "file_get_file",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>file.get_files</h4><ul data-role="listview"><li><pre>    file.get_files: {
+      "description": "Get file uploaded by all users",
+      "function": "file_get_files",
+      "parameters": {
+        "context": {
+          "type": "string",
+          "required": true,
+          "default": "all"
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        },
+        "group_guid": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>file.get_post</h4><ul data-role="listview"><li><pre>    file.get_post: {
+      "description": "Get file post",
+      "function": "file_get_post",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        },
+        "size": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>file.post_comment</h4><ul data-role="listview"><li><pre>    file.post_comment: {
+      "description": "Post a comment on a file post",
+      "function": "file_post_comment",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        },
+        "text": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>file.save_post</h4><ul data-role="listview"><li><pre>    file.save_post: {
+      "description": "Upload file post",
+      "function": "file_save_post",
+      "parameters": {
+        "title": {
+          "type": "string",
+          "required": true
+        },
+        "description": {
+          "type": "string",
+          "required": false
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "access": {
+          "type": "string",
+          "required": true,
+          "default": -2
+        },
+        "tags": {
+          "type": "string",
+          "required": false,
+          "default": ""
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>gcm.register</h4><ul data-role="listview"><li><pre>    gcm.register: {
+      "description": "GCM a Register for Notification",
+      "function": "gcm_register",
+      "parameters": {
+        "regId": {
+          "type": "string",
+          "required": true
+        },
+        "account": {
+          "type": "string",
+          "required": true
+        },
+        "name": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": false
+    },</pre></li></ul></div><div data-role="collapsible"><h4>group.get_activity</h4><ul data-role="listview"><li><pre>    group.get_activity: {
+      "description": "GET group activity",
+      "function": "group_get_activity",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "from_guid": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>group.get_icon</h4><ul data-role="listview"><li><pre>    group.get_icon: {
+      "description": "GET group icon",
+      "function": "group_get_icon",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "size": {
+          "type": "string",
+          "required": false,
+          "default": "medium"
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>group.get_list</h4><ul data-role="listview"><li><pre>    group.get_list: {
+      "description": "GET all the groups",
+      "function": "group_get_list",
+      "parameters": {
+        "context": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "from_guid": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>group.join_group</h4><ul data-role="listview"><li><pre>    group.join_group: {
+      "description": "Join group",
+      "function": "group_join_group",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>group.leave_group</h4><ul data-role="listview"><li><pre>    group.leave_group: {
+      "description": "Leave group",
+      "function": "group_leave_group",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>image.get_photos</h4><ul data-role="listview"><li><pre>    image.get_photos: {
+      "description": "GET all the photos",
+      "function": "image_get_photos",
+      "parameters": {
+        "context": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>image.get_post</h4><ul data-role="listview"><li><pre>    image.get_post: {
+      "description": "Get image post",
+      "function": "image_get_post",
+      "parameters": {
+        "joindate": {
+          "type": "int",
+          "required": true
+        },
+        "guid": {
+          "type": "int",
+          "required": true
+        },
+        "name": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>image.save_post</h4><ul data-role="listview"><li><pre>    image.save_post: {
+      "description": "Post a image post",
+      "function": "image_save_post",
+      "parameters": {
+        "access": {
+          "type": "string",
+          "required": true
+        },
+        "album_guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "title": {
+          "type": "string",
+          "required": false,
+          "default": ""
+        },
+        "caption": {
+          "type": "string",
+          "required": false,
+          "default": ""
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>likes.add</h4><ul data-role="listview"><li><pre>    likes.add: {
+      "description": "Add a like",
+      "function": "likes_add",
+      "parameters": {
+        "entity_guid": {
+          "type": "int",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>likes.count</h4><ul data-role="listview"><li><pre>    likes.count: {
+      "description": "Count number of likes",
+      "function": "likes_count_number_of_likes",
+      "parameters": {
+        "entity_guid": {
+          "type": "int",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>likes.delete</h4><ul data-role="listview"><li><pre>    likes.delete: {
+      "description": "Delete a like",
+      "function": "likes_delete",
+      "parameters": {
+        "entity_guid": {
+          "type": "int",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>likes.getusers</h4><ul data-role="listview"><li><pre>    likes.getusers: {
+      "description": "Get users who liked an entity",
+      "function": "likes_getusers",
+      "parameters": {
+        "entity_guid": {
+          "type": "int",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>message.send</h4><ul data-role="listview"><li><pre>    message.send: {
+      "description": "Send a message",
+      "function": "message_send",
+      "parameters": {
+        "subject": {
+          "type": "string",
+          "required": true
+        },
+        "body": {
+          "type": "string",
+          "required": true
+        },
+        "send_to": {
+          "type": "string",
+          "required": true
+        },
+        "reply": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>messages.count</h4><ul data-role="listview"><li><pre>    messages.count: {
+      "description": "Get a count of the users unread messages",
+      "function": "messages_count",
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>messages.delete</h4><ul data-role="listview"><li><pre>    messages.delete: {
+      "description": "Delete a message",
+      "function": "messages_delete",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>messages.inbox</h4><ul data-role="listview"><li><pre>    messages.inbox: {
+      "description": "Get messages inbox",
+      "function": "messages_inbox",
+      "parameters": {
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>messages.mark_all_as_read</h4><ul data-role="listview"><li><pre>    messages.mark_all_as_read: {
+      "description": "Mark all select messages as read",
+      "function": "messages_mark_all_as_read",
+      "parameters": {
+        "guidString": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>messages.mark_all_as_unread</h4><ul data-role="listview"><li><pre>    messages.mark_all_as_unread: {
+      "description": "Mark all select messages as unread",
+      "function": "messages_mark_all_as_unread",
+      "parameters": {
+        "guidString": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>messages.mark_as_unread</h4><ul data-role="listview"><li><pre>    messages.mark_as_unread: {
+      "description": "Unread a message",
+      "function": "messages_mark_as_unread",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>messages.multiple_delete</h4><ul data-role="listview"><li><pre>    messages.multiple_delete: {
+      "description": "Multiple messages delete",
+      "function": "messages_multiple_delete",
+      "parameters": {
+        "guidString": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>messages.read</h4><ul data-role="listview"><li><pre>    messages.read: {
+      "description": "Read a single message",
+      "function": "messages_read",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>messages.sent</h4><ul data-role="listview"><li><pre>    messages.sent: {
+      "description": "Get sent",
+      "function": "messages_sent",
+      "parameters": {
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>post.get_comments</h4><ul data-role="listview"><li><pre>    post.get_comments: {
+      "description": "Get comments for a post",
+      "function": "post_get_comments",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div>
+	
+	<div data-role="collapsible"><h4>site.getapi</h4><ul data-role="listview"><li><pre>    site.getapi: {
+      "description": "Get API Key",
+      "function": "site_getapi",
+      "call_method": "POST",
+      "require_api_auth": false,
+      "require_user_auth": false
+    },</pre></li></ul></div>
+	
+	<div data-role="collapsible"><h4>site.user_can_edit</h4><ul data-role="listview"><li><pre>    site.user_can_edit: {
+      "description": "Get about user if he/she ownes the object.",
+	  "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": false,
+      "require_user_auth": false
+    },</pre></li></ul></div>
+	
+	<div data-role="collapsible"><h4>site.get_list_plugin</h4><ul data-role="listview"><li><pre>    site.get_list_plugin: {
+      "description": "Get list site Plugin",
+      "function": "site_get_list_plugin",
+      "call_method": "GET",
+      "require_api_auth": false,
+      "require_user_auth": false
+    },</pre></li></ul></div><div data-role="collapsible"><h4>site.getinfo</h4><ul data-role="listview"><li><pre>    site.getinfo: {
+      "description": "Get site information",
+      "function": "site_getinfo",
+      "call_method": "GET",
+      "require_api_auth": false,
+      "require_user_auth": false
+    },</pre></li></ul></div><div data-role="collapsible"><h4>site.river_friends</h4><ul data-role="listview"><li><pre>    site.river_friends: {
+      "description": "Read friends latest news feed",
+      "function": "site_river_friends",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        },
+        "from_guid": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>site.river_mine</h4><ul data-role="listview"><li><pre>    site.river_mine: {
+      "description": "Read mine latest news feed",
+      "function": "site_river_mine",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        },
+        "from_guid": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>site.river_short</h4><ul data-role="listview"><li><pre>    site.river_short: {
+      "description": "Read latest news feed",
+      "function": "site_river_short",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        },
+        "from_guid": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>system.api.list</h4><ul data-role="listview"><li><pre>   system.api.list: {
+      "description": "List all available API calls on the system.",
+      "function": "list_all_apis",
+      "call_method": "GET",
+      "require_api_auth": false,
+      "require_user_auth": false
+    },</pre></li></ul></div>
+	
+	<div data-role="collapsible"><h4>user.forgot_password</h4><ul data-role="listview"><li><pre>    user.forgot_password:{  
+      "description":"Forgot\Lost Password",
+      "parameters":{  
+        "username":{  
+          "type":"string",
+          "required":true
+        }
+      },
+      "call_method":"GET",
+      "require_api_auth":true,
+      "require_user_auth":false
+    },</pre></li></ul></div>
+	
+	<div data-role="collapsible"><h4>user.check_username_availability</h4><ul data-role="listview"><li><pre>    user.check_username_availability: {
+      "description": "Get Username by email",
+      "function": "user_check_username_availability",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": false
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.friend.add</h4><ul data-role="listview"><li><pre>    user.friend.add: {
+      "description": "Add a user as friend",
+      "function": "user_friend_add",
+      "parameters": {
+        "friend": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.friend.get_friends</h4><ul data-role="listview"><li><pre>    user.friend.get_friends: {
+      "description": "Register user",
+      "function": "user_get_friends",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": false,
+      "require_user_auth": false
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.friend.get_friends_of</h4><ul data-role="listview"><li><pre>    user.friend.get_friends_of: {
+      "description": "Register user",
+      "function": "user_get_friends_of",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.friend.is.friend.of</h4><ul data-role="listview"><li><pre>    user.friend.is.friend.of: {
+      "description": "Check a user is friend",
+      "function": "user_friend_is_friend_of",
+      "parameters": {
+        "friend": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.friend.remove</h4><ul data-role="listview"><li><pre>    user.friend.remove: {
+      "description": "Remove friend",
+      "function": "user_friend_remove",
+      "parameters": {
+        "friend": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.get_friends</h4><ul data-role="listview"><li><pre>    user.get_friends: {
+      "description": "Register user",
+      "function": "user_get_friends",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.get_messageboard</h4><ul data-role="listview"><li><pre>    user.get_messageboard: {
+      "description": "Get a users messageboard",
+      "function": "user_get_messageboard",
+      "parameters": {
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 10
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.get_profile</h4><ul data-role="listview"><li><pre>    user.get_profile: {
+      "description": "Get user profile information",
+      "function": "user_get_profile",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.get_profile_fields</h4><ul data-role="listview"><li><pre>    user.get_profile_fields: {
+      "description": "Get user profile labels",
+      "function": "user_get_profile_fields",
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.get_user_by_email</h4><ul data-role="listview"><li><pre>    user.get_user_by_email: {
+      "description": "Get Username by email",
+      "function": "user_get_user_by_email",
+      "parameters": {
+        "email": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.list_members</h4><ul data-role="listview"><li><pre>    user.list_members: {
+      "description": "list members",
+      "function": "user_list_members",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.post_messageboard</h4><ul data-role="listview"><li><pre>    user.post_messageboard: {
+      "description": "Post a messageboard post",
+      "function": "user_post_messageboard",
+      "parameters": {
+        "text": {
+          "type": "string",
+          "required": true
+        },
+        "to": {
+          "type": "string",
+          "required": false
+        },
+        "from": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.register</h4><ul data-role="listview"><li><pre>    user.register: {
+      "description": "Register user",
+      "function": "user_register",
+      "parameters": {
+        "name": {
+          "type": "string",
+          "required": true
+        },
+        "email": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "password": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": false
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.river_short</h4><ul data-role="listview"><li><pre>    user.river_short: {
+      "description": "Read latest news feed",
+      "function": "user_river_short",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.save_profile</h4><ul data-role="listview"><li><pre>    user.save_profile: {
+      "description": "Get user profile information with username",
+      "function": "user_save_profile",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "profile": {
+          "type": "array",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>user.search</h4><ul data-role="listview"><li><pre>    user.search: {
+      "description": "search user",
+      "function": "user_search",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        },
+        "search_name": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>wire.delete_posts</h4><ul data-role="listview"><li><pre>    wire.delete_posts: {
+      "description": "Delete a wire post",
+      "function": "wire_delete",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        },
+        "wireid": {
+          "type": "int",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": false
+    },</pre></li></ul></div><div data-role="collapsible"><h4>wire.get_comments</h4><ul data-role="listview"><li><pre>    wire.get_comments: {
+      "description": "Get comments for a wire post",
+      "function": "wire_get_comments",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 20
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>wire.get_image_comments</h4><ul data-role="listview"><li><pre>    wire.get_image_comments: {
+      "description": "Get image comments for a wire post",
+      "function": "wire_get_image_comments",
+      "parameters": {
+        "guid": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        },
+        "limit": {
+          "type": "int",
+          "required": false,
+          "default": 10
+        },
+        "offset": {
+          "type": "int",
+          "required": false,
+          "default": 0
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>wire.get_posts</h4><ul data-role="listview"><li><pre>    wire.get_posts: {
+      "description": "Read latest wire post",
+      "function": "wire_get_posts",
+      "parameters": {
+        "context": {
+          "type": "string",
+          "required": false,
+          "default": "all"
+        },
+        "limit": {
+          "type": "int",
+          "required": false
+        },
+        "offset": {
+          "type": "int",
+          "required": false
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>wire.post_comment</h4><ul data-role="listview"><li><pre>    wire.post_comment: {
+      "description": "Post a comment on a wire post",
+      "function": "wire_post_comment",
+      "parameters": {
+        "parent_guid": {
+          "type": "int",
+          "required": true
+        },
+        "text": {
+          "type": "string",
+          "required": true
+        },
+        "access": {
+          "type": "string",
+          "required": false
+        },
+        "wireMethod": {
+          "type": "string",
+          "required": false
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>wire.post_image_comment</h4><ul data-role="listview"><li><pre>    wire.post_image_comment: {
+      "description": "Post a comment on a image post",
+      "function": "wire_post_image_comment",
+      "parameters": {
+        "guid": {
+          "type": "int",
+          "required": true
+        },
+        "text": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": false
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    },</pre></li></ul></div><div data-role="collapsible"><h4>wire.save_post</h4><ul data-role="listview"><li><pre>
+    wire.save_post: {
+      "description": "Post a wire post",
+      "function": "wire_save_post",
+      "parameters": {
+        "text": {
+          "type": "string",
+          "required": true
+        },
+        "access": {
+          "type": "string",
+          "required": true
+        },
+        "wireMethod": {
+          "type": "string",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "call_method": "POST",
+      "require_api_auth": true,
+      "require_user_auth": true
+    }
+
+	</li></ul>
+	</div>
+<div data-role="collapsible"><h4>facebook.user_login</h4><ul data-role="listview"><li><pre>
+    facebook.user_login: {
+      "description": "Register user using Facebook",
+      "parameters": {
+        "accessToken": {
+          "type": "string",
+          "required": true
+        },
+        "user_id": {
+          "type": "string",
+          "required": true
+        },
+        "profile_name": {
+          "type": "string",
+          "required": true
+        },
+        "user_email": {
+          "type": "string",
+          "required": true
+        },
+        "user_name": {
+          "type": "string",
+          "required": true
+        }
+		},
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": false
+    }
+
+	</li></ul>
+	</div>
+<div data-role="collapsible"><h4>site.notifications_count</h4><ul data-role="listview"><li><pre>
+    site.notifications_count: {
+      "description": "Get the count of notifications",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        }
+		},
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    }
+
+	</li></ul>
+	</div>	
+<div data-role="collapsible"><h4>site.get_notifications</h4><ul data-role="listview"><li><pre>
+   site.get_notifications: {
+      "description": "Get the list of notifications",
+      "parameters": {
+        "username": {
+          "type": "string",
+          "required": true
+        }
+		},
+      "call_method": "GET",
+      "require_api_auth": true,
+      "require_user_auth": true
+    }
+
+	</li></ul>
+	</div>	
+	
+	
+</div>
+
+  <div data-role="footer">
+    <h1>Copyright 2016 | Elgg</h1>
+  </div>
+</div> 
+
+</body>
+</html>
+	
