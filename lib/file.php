@@ -138,7 +138,8 @@ function file_get_files($context, $username, $limit = 20, $offset = 0, $group_gu
 		foreach($latest_file as $single ) {
 			$file['guid'] = $single->guid;
 			$file['title'] = $single->title;
-
+			$file['tags'] = $single->tags;
+			
 			if ($single->description == null) {
 				$file['description'] = '';
 			} else if (strlen($single->description) > 300) {
@@ -339,7 +340,8 @@ function file_get_file($guid, $username) {
 
     $file['guid'] = $single->guid;
     $file['title'] = $single->title;
-
+	$file['tags'] = $single->tags;
+	
     if ($single->description == null) {
         $file['description'] = '';
     } else {
@@ -511,7 +513,6 @@ function file_save_post($title, $description, $username, $access, $tags) {
 		if (empty($title)) {
 			$title = htmlspecialchars($_FILES['upload']['name'], ENT_QUOTES, 'UTF-8');
 		}
-
 	}
 
 	$file->title = $title;
@@ -631,12 +632,116 @@ elgg_ws_expose_function('file.save_post',
 	"file_save_post",
 	array(
 		'title' => array ('type' => 'string', 'required' => true),
-		'description' => array ('type' => 'string', 'required' => true),
+		'description' => array ('type' => 'string', 'required' => false),
 		'username' => array ('type' => 'string', 'required' => true),
 		'access' => array ('type' => 'string', 'required' => true, 'default'=>ACCESS_FRIENDS),
 		'tags' => array ('type' => 'string', 'required' => false, 'default'=>''),
 	),
 	"Upload file post",
 	'POST',
+	true,
+	true);
+	
+/**
+ * @param $guid
+ * @param $title
+ * @param $description
+ * @param $username
+ * @param $access
+ * @param $tags
+ * @return array
+ * @throws InvalidParameterException
+ */
+	
+function file_update_post($guid, $title, $description, $username, $access, $tags) {
+    $return = array();
+	if(!$username) {
+		$user = elgg_get_logged_in_user_entity();
+	} else {
+		$user = get_user_by_username($username);
+		if (!$user) {
+			throw new InvalidParameterException('registration:usernamenotvalid');
+		}
+	}
+	$container_guid = $user->guid;
+
+	if ($access == 'ACCESS_FRIENDS') {
+		$access_id = -2;
+	} elseif ($access == 'ACCESS_PRIVATE') {
+		$access_id = 0;
+	} elseif ($access == 'ACCESS_LOGGED_IN') {
+		$access_id = 1;
+	} elseif ($access == 'ACCESS_PUBLIC') {
+		$access_id = 2;
+	} else {
+		$access_id = -2;
+	}
+
+    $single = get_entity($guid);
+    if (!elgg_instanceof($single, 'object', 'file')) {
+        exit;
+    }
+	
+	$single->title = $title;
+	$single->description = $description;
+	$single->access_id = $access_id;
+	$single->tags = string_to_tag_array($tags);
+	$fileSaved = $single->save();
+	
+	if ($fileSaved) {
+			$return['message'] = "File update success";
+		} else {
+			$return['message'] = "File update failed";
+		}
+		
+	return $return;
+}
+
+elgg_ws_expose_function('file.update_post',
+	"file_update_post",
+	array(
+		'guid' => array ('type'=> 'int', 'required'=>true),
+		'title' => array ('type' => 'string', 'required' => true),
+		'description' => array ('type' => 'string', 'required' => true),
+		'username' => array ('type' => 'string', 'required' => true),
+		'access' => array ('type' => 'string', 'required' => true, 'default'=>ACCESS_FRIENDS),
+		'tags' => array ('type' => 'string', 'required' => false, 'default'=>''),
+	),
+	"Update file post",
+	'POST',
+	true,
+	true);
+
+
+/**
+ * Delete file entity
+ * @parameter guid
+ */
+function file_delete_post($guid,$username){
+	$file = get_entity($guid);
+	$user = get_user_by_username($username);
+	if (elgg_instanceof($file, 'object', 'file') && $file->canEdit($user->guid)) {
+			if (!$file->delete()) {
+				$return['success'] = false;
+				$return['message'] = elgg_echo("file:deletefailed");
+			} else {
+				$return['success'] = true;
+				$return['message'] = elgg_echo("file:deleted");
+			}
+	} else {
+		$return['success'] = false;
+		$return['message'] = elgg_echo("file:deletefailed");
+	}
+	return $return;
+}
+
+elgg_ws_expose_function('file.delete_post',
+	"file_delete_post",
+	array(
+		'guid' => array ('type'=> 'int', 'required'=>true),
+		'username' => array ('type'=> 'string', 'required'=>true),
+	),
+	"Delete file post",
+	'GET',
 	true,
 	true);

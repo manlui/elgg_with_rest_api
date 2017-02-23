@@ -117,7 +117,7 @@ function bookmark_get_posts($context,  $limit = 20, $offset = 0, $username, $fro
             if ($single->tags == null) {
                 $bookmark['tags'] = '';
             } else {
-                $bookmark['tags'] = implode(",", $single->tags);
+                $bookmark['tags'] = $single->tags;
             }
 
             $bookmark['like_count'] = likes_count_number_of_likes($single->guid);
@@ -184,7 +184,7 @@ function bookmark_get_post($guid, $username) {
     if ($bookmark->tags == null) {
         $return['tags'] = '';
     } else {
-        $return['tags'] = implode(",", $bookmark->tags);
+        $return['tags'] = $bookmark->tags;
     }
 
     $comments = elgg_get_entities(array(

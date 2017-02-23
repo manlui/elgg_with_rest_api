@@ -74,6 +74,8 @@ function blog_get_posts($context, $username, $limit = 10, $offset = 0,$group_gui
             $blog['guid'] = $single->guid;
             $blog['title'] = $single->title;
             $blog['excerpt'] = $single->excerpt;
+            $blog['status'] = $single->status;
+            $blog['link'] = $single->getURL();
 
             if (strlen($single->description) > 300) {
                 $entityString = substr(strip_tags($single->description), 0, 300);
@@ -109,7 +111,7 @@ function blog_get_posts($context, $username, $limit = 10, $offset = 0,$group_gui
             if ($single->tags == null) {
                 $blog['tags'] = '';
             } else {
-                $blog['tags'] = implode(",", $single->tags);
+                $blog['tags'] = $single->tags;
             }
 
             $return[] = $blog;
@@ -331,11 +333,13 @@ function blog_get_post($guid, $username) {
     $return['title'] = htmlspecialchars($blog->title);
     $return['description'] = $blog->description;
     $return['excerpt'] = $blog->excerpt;
+    $return['status'] = $blog->status;
+    $return['link'] = $blog->getURL();
 
     if ($blog->tags == null) {
         $return['tags'] = '';
     } else {
-        $return['tags'] = implode(",", $blog->tags);
+        $return['tags'] = $blog->tags;
     }
 
     $comments = elgg_get_entities(array(

@@ -29,14 +29,14 @@ function gcm_register($regId, $account, $name) {
 
     // create the tables for API stats
     $path = elgg_get_plugins_path();
-    run_sql_script($path . "web_services/schema/mysql.sql");
+    run_sql_script($path . "elgg_with_rest_api/schema/mysql.sql");
 
     if ($account && $regId) {
         $elgg_post = 1;
         $elgg_message = 1;
         // Store user details in db
-        include_once $path . 'web_services/lib/DB_Register_Functions.php';
-        include_once $path . 'web_services/lib/GCM.php';
+        include_once $path . 'elgg_with_rest_api/lib/DB_Register_Functions.php';
+        include_once $path . 'elgg_with_rest_api/lib/GCM.php';
 
         $db = new DB_Register_Functions();
         $gcm = new GCM();
@@ -50,7 +50,7 @@ function gcm_register($regId, $account, $name) {
             $res = $db->storeUser($name, $account, $regId, $elgg_post, $elgg_message);
             $registration_ids = array($regId);
             $message = array("from_name" => "Core Server",
-                "subject" => "Core App Notification",
+                "subject" => "Campus Karma Notification",
                 "message" => "Enable Receive Notification");
 
             $result = $gcm->send_notification($registration_ids, $message);
@@ -78,4 +78,4 @@ elgg_ws_expose_function('gcm.register',
     "GCM a Register for Notification",
     'POST',
     true,
-    true);
+    false);

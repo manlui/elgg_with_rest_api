@@ -23,7 +23,7 @@ function site_getinfo() {
     $site = elgg_get_config('site');
     $siteinfo['url'] = elgg_get_site_url();
     $siteinfo['sitename'] = $site->name;
-    $siteinfo['logo'] = elgg_get_plugin_setting('ws_get_logo', 'web_services');
+    $siteinfo['logo'] = elgg_get_plugin_setting('ws_get_logo', 'elgg_with_rest_api');
     if ($site->description == null) {
         $siteinfo['description'] = '';
     } else {
@@ -64,3 +64,86 @@ elgg_ws_expose_function('site.get_list_plugin',
     'GET',
     false,
     false);
+	
+	
+	
+elgg_ws_expose_function(
+	"site.getapi",
+	"site_getapi",
+	array(),
+	"Get API Key",
+	'POST',
+	false,
+	false
+);
+
+function site_getapi() {
+    return get_api_key();
+}
+
+
+
+
+
+function site_get_content($type) {
+	return elgg_get_plugin_setting($type, 'improvement');
+}
+
+elgg_ws_expose_function('site.get_content',
+    "site_get_content",
+	array('type' => array ('type' => 'string'),),
+    "Get details like about us, terms, privacy etc.",
+    'GET',
+    false,
+    false);
+	
+function user_can_edit($guid,$username) {
+	$object = get_entity($comment_guid);
+	$user = get_user_by_username($username);
+	return $object->canEdit($user->guid);
+}
+
+elgg_ws_expose_function('site.user_can_edit',
+    "user_can_edit",
+	array(
+		'guid' => array ('type'=> 'int', 'required'=>true),
+		'username' => array ('type'=> 'string', 'required'=>true),
+	),
+    "Get about user if he/she ownes the object.",
+    'GET',
+    false,
+    false);
+	
+/**
+ * Delete comment entity
+ * @parameter comment_guid
+ */
+ 
+function site_delete_comment($comment_guid,$username){
+$comment = get_entity($comment_guid);
+$user = get_user_by_username($username);
+if (elgg_instanceof($comment, 'object', 'comment') && $comment->canEdit($user->guid)) {
+	if ($comment->delete()) {
+		$return['success'] = true;
+		$return['message'] = elgg_echo("generic_comment:deleted");
+	} else {
+		$return['success'] = false;
+		$return['message'] = elgg_echo("generic_comment:notdeleted");
+	}
+} else {
+	$return['success'] = false;
+	$return['message'] = elgg_echo("generic_comment:notfound");
+}
+	return $return;
+}
+
+elgg_ws_expose_function('site.delete_comment',
+	"site_delete_comment",
+	array(
+		'comment_guid' => array ('type'=> 'int', 'required'=>true),
+		'username' => array ('type'=> 'string', 'required'=>true),
+	),
+	"Delete comment",
+	'GET',
+	true,
+	true);

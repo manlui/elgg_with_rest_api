@@ -6,7 +6,7 @@ class GCM {
     // constructor
     function __construct() {
         $path = elgg_get_plugins_path();
-        include_once $path.'web_services/lib/DB_Register_Functions.php';
+        include_once $path.'elgg_with_rest_api/lib/DB_Register_Functions.php';
     }
 
     public function setup_message($sender_name, $sender_username, $recipient_name, $recipient_username, $message_sent_title, $message_sent_description)
@@ -55,10 +55,10 @@ class GCM {
 
         if ($message) {
             // include config
-            $GOOGLE_API_KEY = elgg_get_plugin_setting('google_api_key', 'web_services');
+            $GOOGLE_API_KEY = elgg_get_plugin_setting('google_api_key', 'elgg_with_rest_api');
 
             // Set POST variables
-            $url = 'https://android.googleapis.com/gcm/send';
+            $url = 'https://fcm.googleapis.com/fcm/send';
 
             $fields = array(
                 'registration_ids' => $registration_ids,
@@ -86,7 +86,7 @@ class GCM {
 
             // Execute post
             $result = curl_exec($ch);
-            error_log($result);
+            error_log("[".date(DATE_RFC2822). " " . $result . PHP_EOL, 3, "web_error_log");
             if ($result === FALSE) {
                 die('Curl failed: ' . curl_error($ch));
                 return false;
@@ -104,9 +104,9 @@ class GCM {
         $db = new DB_Register_Functions();
         $result = $db->deleteRegId($regId);
         if ($result) {
-            error_log("Success removed RegId");
+            error_log("[".date(DATE_RFC2822)."] Success removed RegId". PHP_EOL, 3, "web_error_log");
         } else {
-            error_log("Fail to remove RedId");
+            error_log("[".date(DATE_RFC2822)."] Fail to remove RedId". PHP_EOL, 3, "web_error_log");
         }
     }
 
@@ -115,9 +115,9 @@ class GCM {
         $db = new DB_Register_Functions();
         $result = $db->updateNewRegId($old_regId, $new_regId);
         if ($result) {
-            error_log("Success updated RegId");
+            error_log("[".date(DATE_RFC2822)."] Success updated RegId". PHP_EOL, 3, "web_error_log");
         } else {
-            error_log("Fail to update RedId");
+            error_log("[".date(DATE_RFC2822)."] Fail to update RedId". PHP_EOL, 3, "web_error_log");
         }
     }
 }

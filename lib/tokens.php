@@ -17,7 +17,7 @@ function create_user_token($username, $expire = 60) {
 	$site_guid = $CONFIG->site_id;
 	$user = get_user_by_username($username);
 	$time = time();
-	$time += 60 * 24 * 365 * $expire;
+	$time += 10 * 60 * 24 * 365 * $expire;
 	$token = md5(rand() . microtime() . $username . $time . $site_guid);
 
 	if (!$user) {
@@ -162,6 +162,7 @@ function auth_gettoken($username, $password) {
 		$return['auth_token'] = create_user_token($username);
 		$return['api_key'] = get_api_key();
 		$return['gcm_sender_id'] = get_gcm_sender_id();
+		$return['username'] = $username;
 		if ($return) {
 			return $return;
 		}
